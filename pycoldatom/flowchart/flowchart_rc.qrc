@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias='start.png'>../res/icons/start.png</file>
+    <file alias='refresh.png'>../res/icons/refresh.png</file>
+</qresource>
+</RCC>
