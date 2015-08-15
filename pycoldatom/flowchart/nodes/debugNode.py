@@ -7,12 +7,11 @@ class LenaNode(Node):
 	nodePaths = [('Debug',)]
 	def __init__(self, name, **kwargs):
 		terminals={
-			'lena': {'io':'out'},
-			'dummy': {'io': 'in'}
+			'lena': {'io':'out'}
 		}
 		super().__init__(name, terminals=terminals, **kwargs)
 
-	def process(self, dummy, display=True):
+	def process(self, display=True):
 		return {'lena': lena()}
 
 nodelist = [LenaNode]

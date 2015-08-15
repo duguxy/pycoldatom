@@ -23,6 +23,7 @@ class TestStringMethods(unittest.TestCase):
 		roi = self.fc.createNode('RectRoi')
 		self.fc.connectTerminals(lena['lena'], imv['image'])
 		self.fc.connectTerminals(imv['view'], roi['view'])
+		lena.update()
 		self.fc.process()
 
 	def tearDown(self):
