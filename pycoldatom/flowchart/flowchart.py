@@ -1,5 +1,7 @@
 import pyqtgraph.flowchart as pgfc
+from pyqtgraph.widgets.FileDialog import FileDialog
 from .nodeLibrary import NodeLibrary
+from pyqtgraph import configfile 
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -8,6 +10,7 @@ from PyQt5.QtGui import *
 from . import flowchart_rc
 
 class Flowchart(pgfc.Flowchart):
+
 	def __init__(self, **kwargs):
 		nodeLibrary = NodeLibrary()
 		super().__init__(library=nodeLibrary, **kwargs)
@@ -25,6 +28,12 @@ class Flowchart(pgfc.Flowchart):
 
 		self.refreshAction = QAction(QIcon(':refresh.png'), 'Refresh', self.win, triggered=self.updateCurrentNode)
 		self.toolbar.addAction(self.refreshAction)
+
+		self.statusBar = QStatusBar(self.win)
+		self.win.setStatusBar(self.statusBar)
+
+		app = QCoreApplication.instance()
+		app.lastWindowClosed.connect(self.clear)
 
 	def updateCurrentNode(self):
 		name = self.mdiArea.currentSubWindow().windowTitle()
@@ -47,4 +56,8 @@ class Flowchart(pgfc.Flowchart):
 			node.setWindowTitle(node, None)
 			node.sigRenamed.connect(node.setWindowTitle)
 			widget.show()
+
+		node.flowchart = self
+		node.statusBar = self.statusBar
+
 		return node

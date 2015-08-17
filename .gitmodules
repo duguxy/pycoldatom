@@ -1,0 +1,3 @@
+[submodule "pycoldatom/utils/pyclibrary"]
+	path = pycoldatom/utils/pyclibrary
+	url = https://github.com/MatthieuDartiailh/pyclibrary

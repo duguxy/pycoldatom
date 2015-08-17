@@ -37,6 +37,12 @@ class RoiNode(Node):
 	def ctrlWidget(self):
 		return self.colorButton
 
+	def saveState(self):
+		return self.roi.saveState()
+
+	def restoreState(self, state):
+		return self.roi.setState(state)
+
 class RectRoiNode(RoiNode):
 	nodeName = 'RectRoi'
 	nodePaths = [('ROI',)]

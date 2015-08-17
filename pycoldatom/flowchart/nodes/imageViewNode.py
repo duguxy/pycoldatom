@@ -20,4 +20,15 @@ class ImageViewNode(Node):
 	def widget(self):
 		return self.imageView
 
+	def close(self):
+		subWindow = self.widget().parent()
+		subWindow.mdiArea().removeSubWindow(subWindow)
+		super().close()
+
+	def saveState(self):
+		return self.imageView.saveState()
+
+	def restoreState(self, state):
+		return self.imageView.restoreState(state)
+
 nodelist = [ImageViewNode]

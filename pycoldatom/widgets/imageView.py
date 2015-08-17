@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 import numpy as np
 
 from . import imageView_rc
+from ..utils.qt import qtstr
 
 class ImageView(QWidget):
 	"A simple image viewer"
@@ -109,8 +110,14 @@ class ImageView(QWidget):
 				pass
 
 	def saveState(self):
-		state = {'geometry': self.geometry()}
+		state = {
+			'autoLevel': self.autoLevel,
+			'gradient': self.histogram.gradient.saveState()
+			}
 		return state
 
 	def restoreState(self, state):
-		self.setGeometry(state['geometry'])
+		self.autoLevelAction.setChecked(state['autoLevel'])
+		self.autoLevelAction.triggered.emit()
+		self.histogram.gradient.restoreState(state['gradient'])
+		# self.autoLevel = state['autoLevel']

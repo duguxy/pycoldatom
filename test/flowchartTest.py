@@ -26,6 +26,9 @@ class TestStringMethods(unittest.TestCase):
 		lena.update()
 		self.fc.process()
 
+	def test_camera(self):
+		cam = self.fc.createNode('Andor Camera')
+
 	def tearDown(self):
 		pass
 
