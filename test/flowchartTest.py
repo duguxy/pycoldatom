@@ -29,6 +29,11 @@ class TestStringMethods(unittest.TestCase):
 	def test_camera(self):
 		cam = self.fc.createNode('Andor Camera')
 
+	def test_file(self):
+		self.fc.createNode('Load mat')
+		self.fc.createNode('Save mat')
+		self.fc.createNode('Dict Select')
+
 	def tearDown(self):
 		pass
 
