@@ -25,6 +25,11 @@ class TestStringMethods(unittest.TestCase):
 		self.fc.connectTerminals(imv['view'], roi['view'])
 		self.fc.process()
 
+	def test_file(self):
+		self.fc.createNode('Load mat')
+		self.fc.createNode('Save mat')
+		self.fc.createNode('Dict Select')
+
 	def tearDown(self):
 		pass
 
