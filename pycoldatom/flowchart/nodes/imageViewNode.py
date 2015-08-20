@@ -12,6 +12,7 @@ class ImageViewNode(Node):
 		}
 		super().__init__(name, terminals=terminals, **kwargs)
 		self.imageView = ImageView()
+		self.imageView.resize(600, 600)
 
 	def process(self, image, display=True):
 		self.imageView.setImage(image)
@@ -20,15 +21,15 @@ class ImageViewNode(Node):
 	def widget(self):
 		return self.imageView
 
-	def close(self):
-		subWindow = self.widget().parent()
-		subWindow.mdiArea().removeSubWindow(subWindow)
-		super().close()
-
 	def saveState(self):
-		return self.imageView.saveState()
+		state = super().saveState()
+		state['imageview'] = self.imageView.saveState()
+		state['geometry'] = self.subwin.geometry()
+		return state
 
 	def restoreState(self, state):
-		return self.imageView.restoreState(state)
+		super().restoreState(state)
+		self.imageView.restoreState(state['imageview'])
+		self.subwin.setGeometry(state['geometry'])
 
 nodelist = [ImageViewNode]

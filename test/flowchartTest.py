@@ -30,9 +30,17 @@ class TestStringMethods(unittest.TestCase):
 		cam = self.fc.createNode('Andor Camera')
 
 	def test_file(self):
-		self.fc.createNode('Load mat')
-		self.fc.createNode('Save mat')
-		self.fc.createNode('Dict Select')
+		lm = self.fc.createNode('Load mat')
+		sm = self.fc.createNode('Save mat')
+		ds = self.fc.createNode('Dict Select')
+		dc = self.fc.createNode('Dict Combine')
+
+	def test_func(self):
+		for node in ['exp', 'log', 'add', 'subtract', 'true_divide', 'multiply']:
+			self.fc.createNode(node)
+
+	def test_fit(self):
+		fitg = self.fc.createNode('FitGaussian')
 
 	def tearDown(self):
 		pass

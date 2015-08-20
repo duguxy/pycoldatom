@@ -6,6 +6,7 @@ class RoiNode(Node):
 	def __init__(self, name, **kwargs):
 		terminals = {
 			'view': {'io': 'in'},
+			'pos': {'io': 'out'},
 			'image': {'io': 'out'},
 			'mask': {'io': 'out'}
 		}
@@ -27,6 +28,7 @@ class RoiNode(Node):
 			result = {}
 			result['image'] = self.roi.getArrayRegion(view.getImage(), view.getImageItem())
 			result['mask'] = self.getMask(view.getImage(), view.getImageItem())
+			result['pos'] = self.roi.pos()
 			return result
 
 	def close(self):
@@ -38,10 +40,13 @@ class RoiNode(Node):
 		return self.colorButton
 
 	def saveState(self):
-		return self.roi.saveState()
+		state = super().saveState()
+		state['roi'] = self.roi.saveState()
+		return state
 
 	def restoreState(self, state):
-		return self.roi.setState(state)
+		super().restoreState(state)
+		self.roi.setState(state['roi'])
 
 class RectRoiNode(RoiNode):
 	nodeName = 'RectRoi'

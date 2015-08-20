@@ -2,25 +2,7 @@ import cv2
 import numpy as np
 from scipy.optimize import leastsq
 
-def make_residual_2d(func, data, weight=None, Dfun=None):
-	shape = data.shape
-	x, y = np.mgrid[:shape[0], :shape[1]]
-
-	if weight is None:
-		weight = 1
-
-	def residual(p):
-		err = func((x, y), *p) - data
-		return err.ravel()*weight
-
-	if Dfun is None:
-		return residual
-
-	def Dresidual(p):
-		df = [d.ravel()*weight for d in Dfun((x, y), *p)]
-		return df
-
-	return residual, Dresidual
+from .fithelper import make_residual_2d, fit_result_wrap
 
 def guess_gaussian(image):
 	m = cv2.moments(image)
@@ -90,6 +72,16 @@ def fit_gaussian(data, weight=None, p0=None, full_output=False):
 		if ier not in [1, 2, 3, 4]:
 			print('Solution not Found')
 		return x
+
+def fit_gaussian_node(data, pos):
+	p, cov_x, infodict, mesg, ier = fit_gaussian(data, full_output=True)
+	result = fit_result_wrap(gaussian, p)
+	if pos is not None:
+		result['x0'] += pos.x()
+		result['y0'] += pos.y()
+	err = infodict['fvec'].reshape(data.shape)
+	return result, err
+
 
 def fit_gaussian_IRLS(data, p0=None, niter=3, wmin=1e-3):
 	weight = None

@@ -6,7 +6,6 @@ import ctypes
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtQuick import QQuickView, QQuickItem
 
 from .cameraSetting_ui import Ui_cameraSettingDialog
 from ...utils.qt import stateFunc
@@ -159,7 +158,7 @@ class AndorNode(Node):
 		super().close()
 
 	def saveState(self):
-		state = {}
+		state = super().saveState()
 		for settingName in self.SETTING_SAVE:
 			for k in stateFunc:
 				if settingName.endswith(k):
@@ -172,6 +171,7 @@ class AndorNode(Node):
 		return state
 
 	def restoreState(self, state):
+		super().restoreState(state)
 		for settingName, settingState in state.items():
 			for k in stateFunc:
 				if settingName.endswith(k):

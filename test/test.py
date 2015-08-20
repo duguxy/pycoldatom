@@ -1,24 +1,6 @@
-import os, sys
+from test2 import bar
 
-if __name__ == "__main__" and (__package__ is None or __package__==''):
-	parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-	sys.path.insert(0, parent_dir)
+print('aaa')
 
-import unittest
-from PyQt5.QtWidgets import QApplication
-
-from pycoldatom.flowchart import Flowchart
-app = QApplication([])
-fc = Flowchart()
-
-imv = fc.createNode('ImageView')
-imv2 = fc.createNode('ImageView')
-lena = fc.createNode('Lena')
-roi = fc.createNode('RectRoi')
-cam = fc.createNode('Andor Camera')
-fc.connectTerminals(lena['lena'], imv['image'])
-fc.connectTerminals(imv['view'], roi['view'])
-fc.connectTerminals(roi['image'], imv2['image'])
-lena.update()
-fc.win.show()
-app.exec_()
+if __name__ == '__main__':
+    bar()

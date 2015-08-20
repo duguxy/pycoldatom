@@ -8,6 +8,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 from . import flowchart_rc
+from ..utils.qt import qtstr
 
 class Flowchart(pgfc.Flowchart):
 
@@ -48,16 +49,29 @@ class Flowchart(pgfc.Flowchart):
 				Qt.WindowTitleHint | \
 				Qt.WindowMinimizeButtonHint | \
 				Qt.WindowMaximizeButtonHint
-			subwin = self.mdiArea.addSubWindow(widget, flags=flags)
-			subwin.resize(600, 600)
-			def setWindowTitle(node, oldname):
-				widget.setWindowTitle(node.name())
-			node.setWindowTitle = setWindowTitle
-			node.setWindowTitle(node, None)
-			node.sigRenamed.connect(node.setWindowTitle)
+			node.subwin = self.mdiArea.addSubWindow(widget, flags=flags)
+			node.subwin.resize(widget.size())
+			self.setSubWindowTitle(node, None)
+			node.sigRenamed.connect(self.setSubWindowTitle)
+			node.sigClosed.connect(self.removeSubWindow)
 			widget.show()
 
 		node.flowchart = self
 		node.statusBar = self.statusBar
 
 		return node
+
+	def setSubWindowTitle(self, node, oldname):
+		node.widget().setWindowTitle(node.name())
+
+	def removeSubWindow(self, node):
+		self.mdiArea.removeSubWindow(node.subwin)
+
+	def saveState(self):
+		state = super().saveState()
+		state['geometry'] = self.win.geometry()
+		return state
+
+	def restoreState(self, state, **kwargs):
+		self.win.setGeometry(state['geometry'])
+		state = super().restoreState(state, **kwargs)

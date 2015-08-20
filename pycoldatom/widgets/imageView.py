@@ -93,19 +93,18 @@ class ImageView(QWidget):
 		if self.autoLevel:
 			self.histogram.imageChanged(autoLevel=True)
 
-	def onMouseMoved(self, pos):
-		if self.crosshairAction.isChecked():
-			mousePoint = self.plot.vb.mapSceneToView(*pos)
-			self.vLine.setPos(mousePoint.x())
-			self.hLine.setPos(mousePoint.y())
-
+	def onMouseMoved(self, pos0):
 		if self.image is not None:
-			pos = self.imageItem.mapFromScene(*pos)
+			pos = self.imageItem.mapFromScene(*pos0)
 			x = int(pos.x())
 			y = int(pos.y())
 			try:
 				value = self.image[x,y]
 				self.label.setText('x=%d, y=%d, value=%f' % (x, y, value))
+				if self.crosshairAction.isChecked():
+					mousePoint = self.plot.vb.mapSceneToView(*pos0)
+					self.vLine.setPos(mousePoint.x())
+					self.hLine.setPos(mousePoint.y())
 			except IndexError:
 				pass
 
@@ -117,7 +116,7 @@ class ImageView(QWidget):
 		return state
 
 	def restoreState(self, state):
+		self.autoLevel = state['autoLevel']
 		self.autoLevelAction.setChecked(state['autoLevel'])
-		self.autoLevelAction.triggered.emit()
 		self.histogram.gradient.restoreState(state['gradient'])
 		# self.autoLevel = state['autoLevel']
