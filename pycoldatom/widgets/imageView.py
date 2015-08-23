@@ -45,6 +45,7 @@ class ImageView(QWidget):
 
 		self.histogram = pg.HistogramLUTItem()
 		self.histogram.setImageItem(self.imageItem)
+		# self.histogram.vb.setMouseEnabled(y=False)
 		self.graphicsLayout.addItem(self.histogram)
 
 		self.label = pg.LabelItem(justify='left')
@@ -79,10 +80,19 @@ class ImageView(QWidget):
 	def addItem(self, item):
 		if item not in self.plot.items:
 			self.plot.addItem(item)
+			item.setParentItem(self.imageItem)
+
+	def addHistItem(self, item):
+		if item not in self.histogram.vb.addedItems:
+			self.histogram.vb.addItem(item)
 
 	def removeItem(self, item):
 		if item in self.plot.items:
 			self.plot.removeItem(item)
+
+	def removeHistItem(self, item):
+		if item in self.histogram.vb.addedItems:
+			self.histogram.vb.removeItem(item)
 
 	def onCrosshairAction(self, checked):
 		self.vLine.setVisible(checked)

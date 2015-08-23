@@ -1,6 +1,6 @@
-from test2 import bar
 
-print('aaa')
+from init_test import *
 
-if __name__ == '__main__':
-    bar()
+from pycoldatom.functions.polylog import g2
+
+print(g2(0.5))

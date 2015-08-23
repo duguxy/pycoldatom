@@ -12,11 +12,16 @@ class ConsoleNode(Node):
 	def __init__(self, name):
 		super().__init__(name, terminals={'title':{'io':'in'}}, allowAddInput=True)
 		self.console = ConsoleWidget()
+		self.title = None
 
 	def process(self, title, display=True, **kwargs):
 		if title is not None:
-			self.console.write('<b>%s</b><br>' % title, html=True)
+			if self.title != title:
+				self.console.write('<b>%s</b><br>' % title, html=True)
+				self.title = title
 		for k, v in kwargs.items():
+			if v is None:
+				continue
 			self.console.locals()[k+'_'] = v
 			self.console.write('%s: %s\n' % (k, v))
 		self.console.write('\n')

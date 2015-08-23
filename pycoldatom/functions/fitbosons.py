@@ -1,117 +1,115 @@
-#!/usr/bin/env python
-"""Import image, radially average it and fit a bimodal Bose distribution to it.
-
-NOTE that this file is a bit of a mess and not suitable for use as a library
-file.
-
-"""
-
-
-from scipy import *
-from pylab import *
-import Image, numpy
+import numpy as np
 from scipy.optimize import leastsq
-from scipy.interpolate import RectBivariateSpline
-import .centerofmass as cmass
-from .polylog import g2, g52, g3
-from imageprocess import radial_interpolate, plot_fitresults
-from constants import kb, mp
+from .polylog import g2
+from .fithelper import fit_result_wrap, make_fit, make_generate, guess_general_2d
 
-fname = 'NaBEC' #'NaBEC_56ms_tof'
-im = Image.open(''.join(['../../archives/2008-04-21/', fname, '.TIF']))
-transimg = numpy.asarray(im)
-# normalize to background transmission of 1
-bg = transimg[0:-20, :]
-transimg = transimg/(bg.sum()/bg.size)
-od10img = where(transimg>1e-10, -log10(transimg), 10)
-pixsize = 20e-6 #20 um/pixel
-mag = 2 # magnification
-mass_Na = 23*mp
-wr = 84 # radial trap freq in Hz
-t_tof = 56e-3 # time of flight in seconds
+def bose_thermal(xy, n0, x0, y0, rx, ry, offset):
+	x, y = xy
+	nt = n0 * g2(np.exp(- ((x-x0)/rx)**2 / 2 - ((y-y0)/ry)**2 / 2)) + offset
+	return nt
 
-# determine center of mass to use as parameter in fitting of n2D_radial to od10img
-com = cmass.center_of_mass(od10img)
+def bose_thermal_D(xy, n0, x0, y0, rx, ry, offset):
+	x, y = xy
+	x2 = ((x-x0)/rx)**2 / 2
+	y2 = ((y-y0)/ry)**2 / 2
+	lg = n0 * np.log(1 - np.exp(1- x2 - y2))
+	dfun = [
+		g2(np.exp(- x2 - y2)), # n0
+		lg * (x-x0) / rx**2, # x0
+		lg * (y-y0) / ry**2, # y0
+		lg * (x-x0) * x2 * 2/rx, # rx
+		lg * (y-y0) * y2 * 2/ry, # ry
+		np.ones_like(x) # offset
+	]
+	return dfun
 
-def n2D_bose_thermal(r, n0_th, r0_th):
-    """Column density for a thermal Bose gas.
+def guess_bose_thermal(data):
+	guess = guess_general_2d(data)
 
-    Assume radial symmetry of the cloud, n0_th and r0_th are fit parameters. r
-    is a 1d array with values of r with respect to the center of the atom cloud.
-    """
-    return n0_th/g2(1)*g2(1-r**2/r0_th**2)
+def bose_condensed(xy, n0, x0, y0, rx, ry, offset):
+	x, y = xy
+	nc = 1 - ((x-x0)/rx)**2 - ((y-y0)/ry)**2
+	nc = n0 * np.maximum(nc, 0) ** 1.5 + offset
+	return nc
 
-def n2D_bose_condensed(r, n0_c, r0_c):
-    """Column density for a condensed Bose gas.
+def bose_condensed_D(xy, n0, x0, y0, rx, ry, offset):
+	x, y = xy
+	x2 = ((x-x0)/rx)**2
+	y2 = ((y-y0)/ry)**2
+	sq = np.sqrt(np.maximum(1 - x2 - y2, 0.0))
+	dfun = [
+		sq ** 3, # n0
+		n0 * sq * 3/2*(x-x0)/rx**2, # x0
+		n0 * sq * 3/2*(y-y0)/ry**2, # y0
+		n0 * sq * x2 * 3/rx, # rx
+		n0 * sq * y2 * 3/ry, # ry
+		np.ones_like(x) # offset
+	]
+	return dfun
 
-    Assume radial symmetry of the cloud, n0_c and r0_c are fit parameters. r
-    is a 1d array with values of r with respect to the center of the atom cloud.
-    """
-    nc = 1-r**2/r0_c**2
-    return n0_c*select([nc>0], [nc])**(1.5)
+def bose_bimodal(xy, n0_th, n0_c, x0, y0, rx_th, ry_th, rx_c, ry_c, offset):
+	return bose_thermal(xy, n0_th, x0, y0, rx_th, ry_th, 0) + \
+		bose_condensed(xy, n0_c, x0, y0, rx_c, ry_c, 0) + \
+		offset
 
-def bimodal(r, n0_th, r0_th, n0_c, r0_c):
-    """Bimodal distribution for a partially condensed Bose gas."""
-    return n2D_bose_thermal(r, n0_th, r0_th) + n2D_bose_condensed(r, n0_c, r0_c)
+def bose_biomodal_D(xy, n0_th, n0_c, x0, y0, rx_th, ry_th, rx_c, ry_c, offset):
+	x, y = xy
+	dt = bose_thermal_D(xy, n0_th, x0, y0, rx_th, ry_th, 0)
+	dc = bose_condensed_D(xy, n0_c, x0, y0, rx_c, ry_c, 0)
+	dfun = [
+		dt[0], # n0_th
+		dc[0], # n0_c
+		dt[1] + dc[1], # x0
+		dt[2] + dc[2], # y0
+		dt[3], # rx_t
+		dt[4], # ry_t
+		dc[3], # rx_c
+		dc[4], # ry_c
+		np.ones_like(x) # offset
+	]
+	return dfun
 
-def n2D_r(r, fitparams):
-    """2D density distribution used for determining the number of atoms"""
-    n0_th, r0_th, n0_c, r0_c = fitparams
-    oneDfunc = bimodal(r, n0_th, r0_th, n0_c, r0_c)
-    return 2*pi*r*oneDfunc
+def bose_bimodal_simple(x, n0_th, n0_c, rx_th, rx_c):
+	return bose_bimodal((x, 0), n0_th, n0_c, 0, 0, rx_th, 1, rx_c, 1, 0)
 
-# guess initial fit parameters
-n0_c = od10img[com[0]-5:com[0]+5, com[1]-5:com[1]+5].sum()*1e-2 # av. central OD
-n0_th = n0_c*0.1
-r0_th = 50 # thermal radius after TOF expansion in pixels
-r0_c = 25 # condensed radius after TOF expansion in pixels
-p0 = [n0_th, r0_th, n0_c, r0_c]
+def bose_bimodal_simple_D(x, n0_th, n0_c, rx_th, rx_c):
+	bbd = bose_biomodal_D((x, 0), n0_th, n0_c, 0, 0, rx_th, 1, rx_c, 1, 0)
+	return [bbd[0], bbd[1], bbd[3], bbd[5]]
 
-def residuals(p, rr, rrdata):
-    print 'p', p
-    n0_th, r0_th, n0_c, r0_c = p
-    """
-    Returns the residuals of the fit of bimodal() to the od10 image.
-    p is the array of fit parameters
-    """
-    err = rrdata - bimodal(rr, n0_th, r0_th, n0_c, r0_c)
-    print 'err', (err**2).sum()
-    return err
+fit_bose_bimodal_simple = make_fit(bose_bimodal_simple) # dfun=bose_bimodal_simple_D)
 
-def residuals2(p, rr, rrdata):
-    print 'p', p
-    n0_th, r0_th = p
-    """
-    Returns the residuals of the fit of n2D_bose_thermal() to the od10 image.
-    p is the array of fit parameters
-    """
-    err = rrdata - n2D_bose_thermal(rr, n0_th, r0_th)
-    print 'err', (err**2).sum()
-    return err
+def guess_bose_bimodal(data):
+	p_mid = 1 - np.arange(30, 1, -1)**2 * 5e-4
+	guess = guess_general_2d(data, p_mid=p_mid)
+	
+	peak = guess['peak']
+	rx = np.array(guess['rx'])
+	p0 = [peak/2, peak/2, rx[0]/2, rx[0]/2]
+	mid = np.array(guess['mid'])
+	p = fit_bose_bimodal_simple(mid, p0=p0)
+	print(p)
+	dmid = np.diff(guess['mid'])
 
-# radial averaging of transmission image
-rcoord, rtrans_prof = radial_interpolate(transimg, com, 0.15, dphi=12)
-# generate radial density profile
-od_prof = where(rtrans_prof>1e-10, -log10(rtrans_prof), 10)
+	drx = np.diff(guess['rx'])
+	d2rx = np.diff(drx) / 2
+	curv_x = np.diff(dmid / drx) / d2rx
+	# print(guess['rx'])
+	# print(guess['mid'])
+	# print(dmid / drx)
+	# print(curv_x)
+	# print(guess['offset'])
+	import matplotlib.pyplot as plt
+	plt.plot(rx, mid)
+	plt.plot(rx, bose_bimodal_simple(rx, *p))
+	plt.plot(rx, bose_bimodal_simple(rx, *p0))
+	plt.show()
 
-# fit density profile where it is not blacked out
-ans, succes = leastsq(residuals, p0, args=(rcoord[100:], od_prof[100:]), ftol=1e-8)
 
-#p02 = [ans[0], ans[1]]
-#ans2, succes2 = leastsq(residuals2, p02, args=(rcoord[700:], od_prof[700:]), ftol=1e-8)
 
-# determine temperature and number of atoms
-T = 0.5*mass_Na*wr**2/(1+wr**2*t_tof**2)*(ans[1]*pixsize/mag)**2/kb
-print 'T = ', T
+fit_bose_thermal = make_fit(bose_thermal, dfun=bose_thermal_D)
+fit_bose_condensed = make_fit(bose_condensed, dfun=bose_condensed_D)
+fit_bose_bimodal = make_fit(bose_bimodal, dfun=bose_biomodal_D)
 
-sigma = 3*589e-9**2/(2*pi) # resonant photon absorption cross-section for Na
-N = (pixsize/float(mag))**2*integrate.quad(n2D_r, 0, rcoord.max(), args=(ans))[0]/sigma
-print 'N = %1.1f million'%(N*1e-6)
-
-fit_prof = bimodal(rcoord, ans[0], ans[1], ans[2], ans[3])
-
-fig = plot_fitresults(rcoord, rtrans_prof, od_prof, fit_prof, T, N)
-show()
-
-#if __name__ == 'main':
-    #main()
+generate_bose_thermal = make_generate(bose_thermal, p0=[1, 50, 50, 20, 20, 0.0])
+generate_bose_condensed = make_generate(bose_condensed, p0=[1, 50, 50, 20, 20, 0.0])
+generate_bose_bimodal = make_generate(bose_bimodal, p0=[1, 1, 50, 50, 20, 20, 10, 10, 0.0])

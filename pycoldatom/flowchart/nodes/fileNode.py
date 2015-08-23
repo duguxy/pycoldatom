@@ -17,6 +17,7 @@ class LoadmatNode(Node):
 		super().__init__(name, terminals={'data':{'io':'out'}, 'title': {'io': 'out'}})
 		self.fileBrowser = FileBrowser()
 		self.matdata = None
+		self.filename = None
 		self.fileBrowser.clicked.connect(self.onFileSelected)
 
 	def onFileSelected(self, index):
@@ -25,11 +26,11 @@ class LoadmatNode(Node):
 		filename, fileext = os.path.splitext(basefilename)
 		if fileext.lower() == '.mat':
 			self.matdata = loadmat(path)
-			self.title = filename
-			self.setOutput(data=self.matdata, title=filename)
+			self.filename = filename
+			self.setOutput(data=self.matdata, title=self.filename)
 
 	def process(self, display=True):
-		return {'data':self.matdata}
+		return {'data':self.matdata, 'title':self.filename}
 
 	def widget(self):
 		return self.fileBrowser

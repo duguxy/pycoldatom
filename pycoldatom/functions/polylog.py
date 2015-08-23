@@ -228,3 +228,4 @@ def g_three(x):
 g2 = np.vectorize(g_two)
 g52 = np.vectorize(g5halves)
 g3 = np.vectorize(g_three)
+g2_1 = np.pi**2 / 6
