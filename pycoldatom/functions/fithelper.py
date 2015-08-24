@@ -3,7 +3,7 @@ import inspect
 from collections import OrderedDict
 from scipy.optimize import leastsq
 
-def guess_general_2d(data, p_max=1-3e-4, p_min=0.2, p_mid=[]):
+def guess_general_2d(data, p_max=1-3e-4, p_min=0.2, p_mid=[0.75, 0.8]):
 	result = {}
 
 	if hasattr(data, 'mask'):
@@ -31,22 +31,23 @@ def guess_general_2d(data, p_max=1-3e-4, p_min=0.2, p_mid=[]):
 	offset = data[ind_min].mean()
 	result['offset'] = offset
 	result['peak'] = data[ind_max].mean() - offset
-	for k in ['x0', 'y0', 'rx', 'ry', 'mid']:
-		result[k] = []
-	for arr in ind_mid:
+	for k in ['x0', 'y0', 'rx', 'ry', 'mid', 'num']:
+		result[k] = np.zeros(len(ind_mid))
+	for i, arr in enumerate(ind_mid):
 		coord_x, coord_y = arr
-		result['x0'].append(x0 + coord_x.mean())
-		result['y0'].append(y0 + coord_y.mean())
-		result['rx'].append(coord_x.std() * sq2)
-		result['ry'].append(coord_y.std() * sq2)
-		result['mid'].append(data[arr].mean() - offset)
+		result['x0'][i] = coord_x.mean() + x0
+		result['y0'][i] = coord_y.mean() + y0
+		result['rx'][i] = coord_x.std() * sq2
+		result['ry'][i] = coord_y.std() * sq2
+		result['mid'][i] = data[arr].mean() - offset
+		result['num'][i] = len(coord_x)
 	return result
 
 def generate_x(data):
 	x = np.mgrid[[slice(s) for s in data.shape]]
 
 	if hasattr(data, 'mask'):
-		x = np.ma.array(x, mask=data.mask)
+		x = [np.ma.array(x0, mask=data.mask) for x0 in x]
 
 	return x
 
@@ -57,13 +58,14 @@ def mask_bound(mask):
 
 	return (np.argmin(x), nx-np.argmin(x[::-1]), np.argmin(y), ny-np.argmin(y[::-1]))
 
-def make_residual(func, data, weight=None, Dfun=None):
-	x = generate_x(data)
+def make_residual(func, data, weight=None, Dfun=None, x=None):
+	if x is None:
+		x = generate_x(data)
+
 	if len(data.shape) > 1:
 		x = [np.ma.compressed(x0) for x0 in x]
 	else:
 		x = np.ma.compressed(x)
-	print(x)
 	data = np.ma.compressed(data)
 
 	if weight is None:
@@ -84,32 +86,33 @@ def make_residual(func, data, weight=None, Dfun=None):
 	return residual, Dresidual
 
 def make_fit(func, dfun=None, guess=None):
-	def fit_func(data, p0, weight=None, full_output=False):
-		residual, Dresidual = make_residual(func, data, weight=weight, Dfun=dfun)
-		result = leastsq(residual, p0, Dfun=Dresidual, col_deriv=1, full_output=full_output)
+	def fit_func(data, p0, x=None, weight=None, full_output=False, **kwargs):
+		residual, Dresidual = make_residual(func, data, weight=weight, Dfun=dfun, x=x)
+		result = leastsq(residual, p0, Dfun=Dresidual, col_deriv=1, full_output=full_output, **kwargs)
 		# result = leastsq(residual, p0, full_output=full_output)
 		if full_output:
 			return result
 		else:
-			x, ier = result
+			p, ier = result
 			if ier not in [1, 2, 3, 4]:
 				print('Solution not Found')
-			return x
+			return p
 
 	if guess is None:
 		return fit_func
 
-	def fit_func_p0(data, p0=None):
+	def fit_func_p0(data, p0=None, **kwargs):
 		if p0 is None:
 			p0 = guess(data)
-		return fit_func(data, p0)
+		return fit_func(data, p0, **kwargs)
 
 	return fit_func_p0
 
 def make_generate(func, p0, size=[100, 100]):
-	def generate(p0=p0, size=size, rand=0.0):
+	def generate(p0=p0, size=size, rand=0.0, x=None):
 		p = p0 * (1 + 2 * rand * (np.random.rand(len(p0)) - 0.5))
-		x = np.mgrid[[slice(s) for s in size]]
+		if x is None:
+			x = np.mgrid[[slice(s) for s in size]]
 		f = func(x, *p)
 		return np.array(p), f
 	return generate

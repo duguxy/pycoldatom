@@ -39,7 +39,7 @@ fit_gaussian = make_fit(gaussian, dfun=gaussian_D, guess=guess_gaussian)
 
 def fit_gaussian_result(data):
 	p0 = guess_gaussian(data)
-	p, cov_x, infodict, mesg, ier = fit_gaussian(p0, full_output=True)
+	p, cov_x, infodict, mesg, ier = fit_gaussian(data, p0, full_output=True)
 	result = fit_result_wrap(gaussian, p)
 
 	if hasattr(data, 'mask'):

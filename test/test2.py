@@ -1,15 +1,14 @@
-from multiprocessing import Process, freeze_support, set_start_method
+import numpy as np
+import cProfile
 
-def foo():
-    print('hello')
+a = np.random.rand(10000)
 
-def bar():
-    freeze_support()
-    set_start_method('spawn')
-    p = Process(target=foo)
-    p.start()
+def foo(x):
+	x = x**2
+	return x
 
-print('bbb')
+def bar(x):
+	return x**2
 
-if __name__ == '__main__':
-    bar()
+cProfile.run('foo(a)')
+cProfile.run('bar(a)') 

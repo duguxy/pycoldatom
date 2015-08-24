@@ -1,0 +1,14 @@
+terminals:
+nodes: [{'class': 'ImageView', 'pos': (63.96853938852189, -15.865635709416964), 'name': 'ImageView.0', 'state': {'autoLevel': True, 'gradient': {'mode': 'rgb', 'ticks': [(1.0, (255, 255, 255, 255)), (0.0, (0, 0, 0, 255))]}, 'geometry': PyQt5.QtCore.QRect(0, 0, 280, 287)}}]
+bypass: False
+geometry: PyQt5.QtCore.QRect(1440, -150, 1920, 1061)
+pos: (0.0, 0.0)
+connects: []
+outputNode:
+    pos: (300.0, 0.0)
+    terminals:
+    bypass: False
+inputNode:
+    pos: (-150.0, 0.0)
+    terminals:
+    bypass: False
