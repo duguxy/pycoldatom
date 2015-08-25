@@ -86,11 +86,11 @@ def make_residual(func, data, weight=None, Dfun=None, x=None):
 	return residual, Dresidual
 
 def make_fit(func, dfun=None, guess=None):
-	def fit_func(data, p0, x=None, weight=None, full_output=False, **kwargs):
+	def fit_func(data, p0, x=None, weight=None, **kwargs):
 		residual, Dresidual = make_residual(func, data, weight=weight, Dfun=dfun, x=x)
-		result = leastsq(residual, p0, Dfun=Dresidual, col_deriv=1, full_output=full_output, **kwargs)
+		result = leastsq(residual, p0, Dfun=Dresidual, col_deriv=1, **kwargs)
 		# result = leastsq(residual, p0, full_output=full_output)
-		if full_output:
+		if kwargs.pop('full_output', False):
 			return result
 		else:
 			p, ier = result

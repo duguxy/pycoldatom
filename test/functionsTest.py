@@ -5,7 +5,7 @@ from pycoldatom.functions.fithelper import add_noise, guess_general_2d
 
 class FunctionsTest(unittest.TestCase):
 	def test_gaussian(self):
-		from pycoldatom.functions.fitclassical import generate_gaussian, fit_gaussian, guess_gaussian
+		from pycoldatom.functions.fitclassical import generate_gaussian, fit_gaussian, guess_gaussian, fit_gaussian_result
 		
 		p, data = generate_gaussian(p0=[1.0, 40, 60, 15, 10, 0.1])
 		data = add_noise(data)
@@ -18,12 +18,14 @@ class FunctionsTest(unittest.TestCase):
 		# print('p:', p)
 		# print('p0:', p0)
 		# print('p1:', p1)
+		result, err = fit_gaussian_result(data)
+		# print(result)
 		np.testing.assert_allclose(p, p1, rtol=1e-2)
 
 	def test_bose_bimodal(self):
-		from pycoldatom.functions.fitbosons import generate_bose_bimodal, fit_bose_bimodal, guess_bose_bimodal
+		from pycoldatom.functions.fitbosons import generate_bose_bimodal, fit_bose_bimodal, guess_bose_bimodal, fit_bose_bimodal_result
 
-		p, data = generate_bose_bimodal(p0=[1, 1, 40, 60, 25, 20, 10, 10, 0.1])
+		p, data = generate_bose_bimodal(p0=[1, 1, 40, 60, 30, 20, 10, 10, 0.1])
 		p0 = guess_bose_bimodal(data)
 		data = add_noise(data)
 		p1 = fit_bose_bimodal(data, p0)
@@ -32,6 +34,8 @@ class FunctionsTest(unittest.TestCase):
 		# print('p:', p)
 		# print('p0:', p0)
 		# print('p1:', p1)
+		result, err = fit_bose_bimodal_result(data)
+		# print(result)
 		np.testing.assert_allclose(p, p1, rtol=1e-1)
 
 	def test_Dfun(self):
@@ -49,9 +53,18 @@ class FunctionsTest(unittest.TestCase):
 		np.testing.assert_allclose(Df, Df0, rtol=1e-4)
 
 	def test_polylog(self):
-		from pycoldatom.functions.polylog import g2, g_two
+		from pycoldatom.functions.polylog import g2, g2_fp
 
-		x = np.linspace(0, 1, 100)
+		x = np.linspace(0, 1.0, 100)
+		ref = g2_fp(x)
+		result = g2(x)
+		# err = ref - result
+		# rerr = result / ref
+		# rerr[np.isnan(rerr)] = 1
+		# print('max:', np.max(err), np.max(rerr))
+		# print('min:', np.min(err), np.min(rerr))
+		# print('std:', np.std(err), np.std(rerr))
+		np.testing.assert_allclose(result, ref, rtol=1e-7, atol=1.5e-7)
 
 
 if __name__ == '__main__':

@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.optimize import leastsq
-from .polylog import g2, g2_1
+from .polylog import g2, g2_1, g3_1
 from .fithelper import fit_result_wrap, make_fit, make_generate, guess_general_2d, generate_x
+from ..utils.exception import Suppressor
+from collections import OrderedDict
 
 def bose_thermal(xy, n0, x0, y0, rx, ry, offset):
 	x, y = xy
@@ -9,6 +11,15 @@ def bose_thermal(xy, n0, x0, y0, rx, ry, offset):
 	nt = n0 / g2_1 * g2(np.exp(- ((x-x0)/rx)**2 / 2 - ((y-y0)/ry)**2 / 2)) + offset
 	# print(nt)
 	return nt
+
+def analyse_bose_thermal(**kwargs):
+	a = {}
+	ls = locals()
+	ls.update(kwargs)
+	s = Suppressor((NameError, KeyError), globals(), ls)
+	s("a['total'] = g3_1 / g2_1 * 2 * np.pi * n0 * rx * ry")
+	
+	return a
 
 def bose_thermal_D(xy, n0, x0, y0, rx, ry, offset):
 	x, y = xy
@@ -26,14 +37,20 @@ def bose_thermal_D(xy, n0, x0, y0, rx, ry, offset):
 	# print(dfun)
 	return dfun
 
-def guess_bose_thermal(data):
-	guess = guess_general_2d(data)
-
 def bose_condensed(xy, n0, x0, y0, rx, ry, offset):
 	x, y = xy
 	nc = 1 - ((x-x0)/rx)**2 - ((y-y0)/ry)**2
 	nc = n0 * np.maximum(nc, 0) ** 1.5 + offset
 	return nc
+
+def analyse_bose_condensed(**kwargs):
+	a = {}
+	ls = locals()
+	ls.update(kwargs)
+	s = Suppressor((NameError, KeyError), globals(), ls)
+	s("a['total'] = 2*np.pi/5 * n0 * rx * ry")
+
+	return a
 
 def bose_condensed_D(xy, n0, x0, y0, rx, ry, offset):
 	x, y = xy
@@ -119,10 +136,45 @@ def guess_bose_bimodal(data):
 	# plt.show()
 	return guess
 
+def analyse_bose_bimodal(**kwargs):
+	a = OrderedDict()
+	result = kwargs
+
+	ls = locals()
+	ls.update(kwargs)
+	s = Suppressor((NameError, KeyError), globals(), ls)
+	
+	thermal_property = analyse_bose_thermal(
+		n0=result['n0_th'],
+		rx=result['rx_th'],
+		ry=result['ry_th'],
+		**kwargs
+	)
+	for k, v in thermal_property.items():
+		a['%s_th' % k] = v
+
+	condensed_property = analyse_bose_condensed(
+		n0=result['n0_c'],
+		rx=result['rx_c'],
+		ry=result['ry_c'],
+		**kwargs
+	)
+	for k, v in condensed_property.items():
+		a['%s_c' % k] = v
+
+	s("a['total'] = a['total_c'] + a['total_th']")
+	s("a['prop_c'] = a['total_c'] / a['total']")
+	s("a['prop_th'] = a['total_th'] / a['total']")
+
+	return a
+
 def fit_bose_bimodal_result(data):
 	p0 = guess_bose_bimodal(data)
 	p, cov_x, infodict, mesg, ier = fit_bose_bimodal(data, p0, full_output=True)
 	result = fit_result_wrap(bose_bimodal, p)
+	for x in ['rx_c', 'ry_c', 'rx_th', 'ry_th']:
+		result[x] = np.abs(result[x])
+	result.update(analyse_bose_bimodal(**result))
 
 	if hasattr(data, 'mask'):
 		xy = generate_x(data)

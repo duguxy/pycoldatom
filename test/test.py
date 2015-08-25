@@ -1,38 +1,31 @@
-
+from mockCamera import mock_CLibrary
 from init_test import *
 
-from pycoldatom.functions.polylog import g2, g2_old
-from sympy.mpmath import polylog
+from PyQt5.QtWidgets import QApplication
+from pycoldatom.flowchart import Flowchart
 
-import matplotlib.pyplot as plt
-import numpy as np
+from unittest.mock import patch
 
-import cProfile
+# import logging
+# import sys
 
-def plot():
-	x = np.linspace(0, 0.1, 10000)
-	def _g2_ref(x):
-		return polylog(2, x)
-	g2_ref = np.vectorize(_g2_ref)
-	ref = g2_ref(x)
-	cProfile.runctx('g2(x)', globals(), locals())
-	res = g2(x)
-	cProfile.runctx('g2_old(x)', globals(), locals())
-	res2 = g2_old(x)
-	err = res - ref
-	err2 = res2 - ref
-	# print(res<0)
-	print(err.std())
-	plt.plot(x, err, label='err1')
-	plt.plot(x, err2, label='err2')
-	plt.legend()
-	plt.show()
+# root = logging.getLogger()
+# root.setLevel(logging.DEBUG)
 
-# x = np.linspace(0.999, 1.0, 10000)
-# res = g2(x)
-# # print((res<0).any())
-# plt.plot(x, res)
-# plt.show()
+# ch = logging.StreamHandler(sys.stdout)
+# ch.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# ch.setFormatter(formatter)
+# root.addHandler(ch)
 
-# plot()
-print(g2(1))
+@patch('pyclibrary.CLibrary', mock_CLibrary)
+def test():
+	app = QApplication([])
+	fc = Flowchart()
+
+	lena = fc.createNode('Andor Camera', pos=(0, 100))
+	fc.win.show()
+	app.exec_()
+
+if __name__ == '__main__':
+	test()

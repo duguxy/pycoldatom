@@ -10,6 +10,8 @@ from PyQt5.QtWidgets import *
 from .cameraSetting_ui import Ui_cameraSettingDialog
 from ...utils.qt import stateFunc
 
+import asyncio
+
 class CameraSettingDialog(QDialog, Ui_cameraSettingDialog):
 	def __init__(self):
 		super().__init__()
@@ -35,12 +37,29 @@ class AndorNode(Node):
 		
 		self.connectButton = QPushButton('Connect')
 		self.connectButton.clicked.connect(self.onConnect)
-		self.layout.addWidget(self.connectButton)
+		self.layout.addWidget(self.connectButton, 0, 0, 1, 2)
 
 		self.settingsButton = QPushButton('Settings')
 		self.settingsButton.clicked.connect(self.onSettings)
-		self.layout.addWidget(self.settingsButton)
+		self.layout.addWidget(self.settingsButton, 1, 0)
 		self.settingsButton.setEnabled(False)
+
+		self.startButton = QPushButton('Start')
+		self.startButton.clicked.connect(self.onStart)
+		self.layout.addWidget(self.startButton, 1, 1)
+		self.startButton.setEnabled(False)
+
+		self.progressBar = QProgressBar(self.panel)
+		self.layout.addWidget(self.progressBar, 2, 0, 1, 2)
+		self.progressBar.setEnabled(False)
+
+		# self.tempLayout = QHBoxLayout(self.panel)
+		# self.tempLabel = QLabel('temp', self.panel)
+		# self.tempLayout.addWidget(self.tempLabel)
+		# self.tempCheckBox = QCheckBox('Cooler', self.panel)
+		# self.tempLayout.addWidget(self.tempCheckBox)
+
+		# self.layout.addLayout(self.tempLayout, 3, 0, 1, 2)
 
 		self.panel.setLayout(self.layout)
 
@@ -52,7 +71,15 @@ class AndorNode(Node):
 		self.settingDialog.setModal(True)
 		self.settingDialog.accepted.connect(self.setCamera)
 
-		
+		self.acqTimer = QTimer()
+		self.acqTimer.setSingleShot(False)
+		self.acqTimer.setInterval(500)
+		self.acqTimer.timeout.connect(self.updateProgress)
+
+		self.tempTimer = QTimer()
+		self.tempTimer.setSingleShot(False)
+		self.tempTimer.setInterval(3000)
+		self.tempTimer.timeout.connect(self.updateTemperature)
 
 	def init_drv(self):
 		QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -90,17 +117,57 @@ class AndorNode(Node):
 				self.connectButton.setText('Disconnect')
 				self.statusBar.showMessage('Connected')
 				self.settingsButton.setEnabled(True)
+				self.startButton.setEnabled(True)
 			else:
-				self.statusBar.showMessage('Connection Error %s' % self.values)
+				self.statusBar.showMessage('Connection Error: %s(%d)' % (self.values[result], result))
+
 		
 		elif self.connectButton.text() == 'Disconnect':
 			self.close_drv()
 			self.connectButton.setText('Connect')
 			self.settingsButton.setEnabled(False)
+			self.startButton.setEnabled(False)
 			self.statusBar.showMessage('Disconnected')
 
 	def onSettings(self):
 		self.settingDialog.show()
+
+	def onStart(self):
+		if self.startButton.text() == 'Start':
+			self.camera.FreeInternalMemory()
+			self.startButton.setText('Stop')
+			self.progressBar.setRange(0, self.settingDialog.frameNumberSpinBox.value())
+			self.progressBar.setValue(0)
+			self.progressBar.setEnabled(True)
+			self.acqTimer.start()
+		elif self.startButton.text() == 'Stop':
+			self.acqTimer.stop()
+			self.camera.AbortAcquisition()
+			self.progressBar.setEnabled(False)
+			self.startButton.setText('Start')
+
+	def onCooler(self, checked):
+		if checked:
+			self.camera.CoolerON()
+		else:
+			self.camera.CoolerOFF()
+
+	def updateProgress(self):
+		status = self.camera.GetStatus()['status']
+		if status == self.header.defs['values']['DRV_IDLE']:
+			self.acquire()
+			self.camera.StartAcquisition()
+		elif status == self.header.defs['values']['DRV_ACQUIRING']:
+			result = self.camera.GetAcquisitionProgress()
+			self.progressBar.setValue(result['series'])
+		else:
+			self.statusBar.showMessage('Status Error: %s(%d)' % (self.values[result], result))
+
+	def updateTemperature(self):
+		pass
+
+	def acquire(self):
+		pass
 
 	# def init_settingsui(self):
 	# 	QML_FILENAME = os.path.join(os.path.dirname(__file__), 'CameraSettings.qml')

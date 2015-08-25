@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import leastsq
-
+from ..utils.exception import Suppressor
 from .fithelper import make_fit, make_generate, fit_result_wrap, generate_x, guess_general_2d
 
 def guess_gaussian(data):
@@ -41,6 +41,7 @@ def fit_gaussian_result(data):
 	p0 = guess_gaussian(data)
 	p, cov_x, infodict, mesg, ier = fit_gaussian(data, p0, full_output=True)
 	result = fit_result_wrap(gaussian, p)
+	result.update(analyse_gaussian(**result))
 
 	if hasattr(data, 'mask'):
 		xy = generate_x(data)
@@ -56,5 +57,14 @@ def fit_gaussian_IRLS(data, p0, niter=3, wmin=1e-3):
 		weight[weight < wmin] = wmin
 		weight = 1 / weight
 	return p0
+
+def analyse_gaussian(**kwargs):
+	a = {}
+	ls = locals()
+	ls.update(kwargs)
+	s = Suppressor((NameError, KeyError), globals(), ls)
+	s("a['total'] = np.sqrt(2 * np.pi) * n0 * rx * ry")
+
+	return a
 
 generate_gaussian = make_generate(gaussian, p0=[1.0, 50, 50, 10, 10, 0.0])

@@ -1,6 +1,7 @@
 from pyqtgraph.flowchart import Node
 import numpy as np
 import inspect
+from scipy.ndimage.filters import median_filter
 from ...utils.qt import setBusyCursor, recoverCursor
 
 def nodeFuncWrapper(func, nodename=None, paths=[('functions',)], interm=None, outterm=['output'], paras={}, cpuheavy=False):
@@ -54,3 +55,12 @@ for f in [np.add, np.subtract, np.divide, np.multiply]:
 
 for name, paras in zip(['sum', 'sumX', 'sumY'], [{}, {'axis':0}, {'axis':1}]):
 	nodelist.append(nodeFuncWrapper(np.sum, nodename=name, paths=[('Analysis',)], interm=['input'], paras=paras))
+
+def calculateOD(sig, ref, bkg):
+	od = -np.log((sig-bkg) / (ref-bkg))
+	bad = np.logical_or(np.isinf(od), np.isnan(od))
+	od[bad] = median_filter(od, (2, 2))[bad]
+	return od
+
+calculateODNode = nodeFuncWrapper(calculateOD, nodename='OD', paths=[('Analysis',)])
+nodelist.append(calculateODNode)
