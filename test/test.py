@@ -1,7 +1,7 @@
 from mockCamera import mock_CLibrary
 from init_test import *
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from pycoldatom.flowchart import Flowchart
 
 from unittest.mock import patch
@@ -20,6 +20,22 @@ from unittest.mock import patch
 
 @patch('pyclibrary.CLibrary', mock_CLibrary)
 def test():
+	from pycoldatom.widgets.andorCamera import AndorCamera
+
+	app = QApplication([])
+	win = QMainWindow()
+	cam = AndorCamera()
+	cam.sigStatusMessage.connect(output)
+	win.setCentralWidget(cam)
+	win.show()
+	# fc = Flowchart()
+
+	# lena = fc.createNode('Andor Camera', pos=(0, 100))
+	# fc.win.show()
+	app.exec_()
+
+@patch('pyclibrary.CLibrary', mock_CLibrary)
+def test2():
 	app = QApplication([])
 	fc = Flowchart()
 
@@ -27,5 +43,8 @@ def test():
 	fc.win.show()
 	app.exec_()
 
+def output(msg):
+	print(msg)
+
 if __name__ == '__main__':
-	test()
+	test2()
