@@ -1,4 +1,5 @@
 from pyqtgraph.flowchart import Node
+from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from ...widgets.fileBrowser import FileBrowser
 
@@ -7,7 +8,10 @@ from PyQt5.QtGui import *
 
 import os
 
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
+
+from ...utils.autosave import getAutosaveFileName
+from ...utils.cicerolistener import CiceroListener
 
 class LoadmatNode(Node):
 	nodeName = 'Load mat'
@@ -49,40 +53,82 @@ class SavematNode(Node):
 	nodePaths = [('File',)]
 
 	def __init__(self, name):
-		super().__init__(name, terminals={'title':{'io':'in'}}, allowAddInput=True)
+		super().__init__(name, terminals={'data':{'io':'in'}}, allowAddInput=True)
 
 		self.panel = QWidget()
-		self.layout = QVBoxLayout(self.panel)
-		self.pathLayout = QHBoxLayout()
+		self.layout = QGridLayout(self.panel)
+
 		self.pathLabel = QLabel('Path')
-		self.pathLayout.addWidget(self.pathLabel)
+		self.layout.addWidget(self.pathLabel, 0, 0)
 		self.pathEdit = QLineEdit()
-		self.pathLayout.addWidget(self.pathEdit)
+		self.layout.addWidget(self.pathEdit, 0, 1)
 		self.selectFolderButton = QPushButton('...')
 		self.selectFolderButton.setMaximumWidth(30)
 		self.selectFolderButton.clicked.connect(self.onSelectFolder)
 		# self.selectFolderButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-		self.pathLayout.addWidget(self.selectFolderButton)
-		self.layout.addLayout(self.pathLayout)
+		self.layout.addWidget(self.selectFolderButton, 0, 2)
+
+		self.folderSuffixLabel = QLabel('Folder Suffix', self.panel)
+		self.layout.addWidget(self.folderSuffixLabel, 1, 0)
+		self.folderSuffixEdit = QLineEdit('')
+		self.layout.addWidget(self.folderSuffixEdit, 1, 1, 1, 2)
+
+		self.fileInfixLabel = QLabel('File infix')
+		self.layout.addWidget(self.fileInfixLabel, 2, 0)
+		self.fileInfixEdit = QLineEdit('')
+		self.layout.addWidget(self.fileInfixEdit, 2, 1, 1, 2)
+
+		# self.fileSuffixLabel = QLabel('File suffix')
+		# self.layout.addWidget(self.fileSuffixLabel, 3, 0)
+		# self.fileSuffixEdit = QLineEdit('')
+		# self.layout.addWidget(self.fileSuffixEdit, 3, 1, 1, 2)
+
 		self.panel.setLayout(self.layout)
+		self.listener = CiceroListener()
+		self.listener.keep_running = True
+		self.listener.start()
 
 	def onSelectFolder(self):
 		path = QFileDialog.getExistingDirectory(self.panel)
 		self.pathEdit.setText(path)
 
-	def process(self, title, display=True):
-		pass
+	def process(self, data, display=True):
+		if data is not None:
+			time = self.listener.commands['time']
+			suffix = ''
+			if 'listvalue' in self.listener.commands:
+				for variable, value in self.listener.commands['listvalue']:
+					suffix += '%s=%s' % (variable, value)
+			filename = getAutosaveFileName(time, suffix, self.fileInfixEdit.text(), self.folderSuffixEdit.text())
+			path = os.path.join(self.pathEdit.text(), filename)
+			if os.path.exists(path):
+				return
+
+			dirs = os.path.dirname(path)
+			if not os.path.isdir(dirs):
+				os.makedirs(dirs)
+			savemat(path, data)
 
 	def ctrlWidget(self):
 		return self.panel
 
+	def close(self):
+		self.listener.keep_running = False
+		super().close()
+
 	def saveState(self):
 		state = super().saveState()
 		state['savepath'] = self.pathEdit.text()
+		state['foldersuffix'] = self.folderSuffixEdit.text()
+		state['fileinfix'] = self.fileInfixEdit.text()
+		# state['filesuffix'] = self.fileSuffixEdit.text()
 		return state
 
 	def restoreState(self, state):
 		super().restoreState(state)
 		self.pathEdit.setText(state['savepath'])
+		self.folderSuffixEdit.setText(state['foldersuffix'])
+		self.fileInfixEdit.setText(state['fileinfix'])
+		# self.fileSuffixEdit.setText(state['filesuffix'])
 
 nodelist = [LoadmatNode, SavematNode]

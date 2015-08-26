@@ -1,0 +1,13 @@
+inputNode:
+    bypass: False
+    pos: (-150.0, 0.0)
+    terminals:
+terminals:
+outputNode:
+    bypass: False
+    pos: (300.0, 0.0)
+    terminals:
+bypass: False
+connects: [('RectRoi.0', 'image', 'ImageView.1', 'image'), ('ImageView.0', 'view', 'RectRoi.0', 'view'), ('Lena.0', 'lena', 'ImageView.0', 'image')]
+pos: (0.0, 0.0)
+nodes: [{'state': {'angle': 0.0, 'pos': (20.0, 20.0), 'size': (100.0, 100.0)}, 'pos': (0.0, 0.0), 'name': 'RectRoi.0', 'class': 'RectRoi'}, {'state': {'gradient': {'ticks': [(1.0, (255, 255, 255, 255)), (0.0, (0, 0, 0, 255))], 'mode': 'rgb'}, 'autoLevel': False}, 'pos': (0.0, 0.0), 'name': 'ImageView.0', 'class': 'ImageView'}, {'state': {'exposureTimeSpinBox': 0.001, 'vbinSpinBox': 1, 'shutterComboBox': 'Open', 'preAmplifySlider': 0, 'frameNumberSpinBox': 1, 'frameTransferCheckBox': False, 'hbinSpinBox': 1, 'triggerComboBox': 'Internal'}, 'pos': (0.0, 0.0), 'name': 'Andor Camera.0', 'class': 'Andor Camera'}, {'state': {'bypass': False, 'pos': (0.0, 0.0)}, 'pos': (0.0, 0.0), 'name': 'Lena.0', 'class': 'Lena'}, {'state': {'gradient': {'ticks': [(0.0, (0, 0, 0, 255)), (1.0, (255, 255, 255, 255))], 'mode': 'rgb'}, 'autoLevel': False}, 'pos': (0.0, 0.0), 'name': 'ImageView.1', 'class': 'ImageView'}]

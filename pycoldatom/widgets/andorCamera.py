@@ -3,9 +3,13 @@ from pyclibrary import CParser, CLibrary
 import os
 import ctypes
 
+import numpy as np
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
+from ctypes import POINTER, c_long
 
 from .cameraSetting_ui import Ui_cameraSettingDialog
 from ..utils.qt import stateFunc
@@ -18,6 +22,7 @@ class CameraSettingDialog(QDialog, Ui_cameraSettingDialog):
 
 class AndorCamera(QWidget):
 	sigStatusMessage = pyqtSignal(str)
+	sigAcquiredData = pyqtSignal(list)
 	SETTING_SAVE = ['frameNumberSpinBox', 'frameTransferCheckBox', 'exposureTimeSpinBox',
 			'shutterComboBox', 'triggerComboBox', 'hbinSpinBox', 'vbinSpinBox', 
 			'preAmplifySlider']
@@ -85,7 +90,7 @@ class AndorCamera(QWidget):
 		ANDOR_CACHE = os.path.join(drv_path, 'ATMCD32D.cache')
 		self.header = CParser([ANDOR_HEADER], cache=ANDOR_CACHE, macros={'WINAPI':''})
 		self.camera = CLibrary(ANDOR_LIB, self.header, convention='windll')
-		self.DRV_SUCCESS = self.header.defs['values']['DRV_SUCCESS']
+		self.DRV_SUCCESS = self.camera.DRV_SUCCESS
 		self.values = dict((v, k) for k, v in self.header.defs['values'].items())
 		
 		QApplication.restoreOverrideCursor()
@@ -145,20 +150,29 @@ class AndorCamera(QWidget):
 
 	def updateProgress(self):
 		status = self.camera.GetStatus()['status']
-		if status == self.header.defs['values']['DRV_IDLE']:
+		if status == self.camera.DRV_IDLE:
 			self.acquire()
 			self.camera.StartAcquisition()
-		elif status == self.header.defs['values']['DRV_ACQUIRING']:
+		elif status == self.camera.DRV_ACQUIRING:
 			result = self.camera.GetAcquisitionProgress()
 			self.progressBar.setValue(result['series'])
 		else:
-			self.sigStatusMessage.emit('Status Error: %s(%d)' % (self.values[result], result))
+			self.sigStatusMessage.emit('Status Error: %s(%d)' % (self.values[status], status))
 
 	def updateTemperature(self):
 		pass
 
 	def acquire(self):
-		pass
+		result = self.camera.GetNumberNewImages()
+		hbin = self.settingDialog.hbinSpinBox.value()
+		vbin = self.settingDialog.vbinSpinBox.value()
+		height = int(512/vbin)
+		width = int(512/hbin)
+		frame_number = self.settingDialog.frameNumberSpinBox.value()
+		size = height * width * frame_number
+		data = np.empty(size, dtype=np.intc)
+		self.camera.GetImages(result['first'], result['last'], data.ctypes.data_as(POINTER(c_long)), size)
+		self.sigAcquiredData.emit([arr.reshape(width, height) for arr in np.split(data, frame_number)])
 
 	# def init_settingsui(self):
 	# 	QML_FILENAME = os.path.join(os.path.dirname(__file__), 'CameraSettings.qml')
@@ -205,10 +219,13 @@ class AndorCamera(QWidget):
 		preamp = self.settingDialog.preAmplifySlider.value()
 		self.camera.SetPreAmpGain(preamp)
 
+		self.camera.PrepareAcquisition()
+
 	def close(self):
 		self.close_drv()
 
 	def saveState(self):
+		state = {}
 		for settingName in self.SETTING_SAVE:
 			for k in stateFunc:
 				if settingName.endswith(k):

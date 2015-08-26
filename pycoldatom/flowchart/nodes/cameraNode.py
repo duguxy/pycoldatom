@@ -16,14 +16,22 @@ class AndorNode(Node):
 
 	def __init__(self, name, **kwargs):
 		terminals = {
-			'image': {'io': 'out'}
+			'images': {'io': 'out'}
 		}
 		super().__init__(name, terminals=terminals, **kwargs)
 
 		self.cameraPanel = AndorCamera()
+		self.cameraPanel.sigStatusMessage.connect(self.showMessage)
+		self.cameraPanel.sigAcquiredData.connect(self.onAcquisition)
+
+	def showMessage(self, msg):
+		self.statusBar.showMessage(msg)
 
 	def ctrlWidget(self):
 		return self.cameraPanel
+
+	def onAcquisition(self, data):
+		self.setOutput(images={str(i): img for i, img in enumerate(data)})
 
 	def close(self):
 		self.cameraPanel.close()

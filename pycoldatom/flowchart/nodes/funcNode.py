@@ -59,7 +59,7 @@ for name, paras in zip(['sum', 'sumX', 'sumY'], [{}, {'axis':0}, {'axis':1}]):
 def calculateOD(sig, ref, bkg):
 	od = -np.log((sig-bkg) / (ref-bkg))
 	bad = np.logical_or(np.isinf(od), np.isnan(od))
-	od[bad] = median_filter(od, (2, 2))[bad]
+	od[bad] = 0.0
 	return od
 
 calculateODNode = nodeFuncWrapper(calculateOD, nodename='OD', paths=[('Analysis',)])

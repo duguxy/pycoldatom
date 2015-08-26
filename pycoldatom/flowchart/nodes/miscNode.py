@@ -63,13 +63,15 @@ class DictCombineNode(Node):
 	nodePaths = [('Misc',)]
 
 	def __init__(self, name):
-		super().__init__(name, terminals={'dic':{'io':'in'}, 'dic_new': {'io': 'out'}}, allowAddOutput=True)
+		super().__init__(name, terminals={'dic':{'io':'in'}, 'dic_new': {'io': 'out'}}, allowAddInput=True)
 
 	def process(self, dic, display=True, **kwargs):
 		if dic is None:
 			dic = {}
 
 		kwargs = {k: v for k, v in kwargs.items() if v is not None}
-		return {'dic_new': dic.copy().update(kwargs)}
+		dic_new = dic.copy()
+		dic_new.update(kwargs)
+		return {'dic_new': dic_new}
 
 nodelist = [DictSelectNode, DictCombineNode]
