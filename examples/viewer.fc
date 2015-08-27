@@ -1,0 +1,14 @@
+outputNode:
+    bypass: False
+    pos: (300.0, 0.0)
+    terminals:
+geometry: PyQt5.QtCore.QRect(640, 278, 1280, 720)
+connects: [('Load mat.0', 'data', 'Dict Select.0', 'data'), ('Dict Select.0', 'selected', 'ImageView.0', 'image')]
+inputNode:
+    bypass: False
+    pos: (-150.0, 0.0)
+    terminals:
+bypass: False
+pos: (0.0, 0.0)
+nodes: [{'pos': (210.2023361011723, -55.44544432379133), 'class': 'ImageView', 'name': 'ImageView.0', 'state': {'bypass': False, 'pos': (210.2023361011723, -55.44544432379133), 'imageview': {'gradient': {'mode': 'rgb', 'ticks': [(1.0, (255, 255, 255, 255)), (0.0, (0, 0, 0, 255))]}, 'autoLevel': True}, 'geometry': PyQt5.QtCore.QRect(640, 0, 600, 600)}}, {'pos': (-29.693603134043485, -53.02835677482193), 'class': 'Load mat', 'name': 'Load mat.0', 'state': {'bypass': False, 'pos': (-29.693603134043485, -53.02835677482193), 'geometry': PyQt5.QtCore.QRect(0, 0, 640, 480)}}, {'pos': (80.88815223130791, -50.61126922585251), 'class': 'Dict Select', 'name': 'Dict Select.0', 'state': {'bypass': False, 'pos': (80.88815223130791, -50.61126922585251), 'terminals': OrderedDict([('data', {'optional': False, 'removable': False, 'renamable': False, 'io': 'in', 'multi': False, 'multiable': False}), ('selected', {'optional': False, 'removable': False, 'renamable': False, 'io': 'out', 'multi': False, 'multiable': False})]), 'selected': None}}]
+terminals:
