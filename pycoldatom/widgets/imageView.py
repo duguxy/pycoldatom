@@ -28,7 +28,8 @@ class ImageView(QWidget):
 
 		self.crosshairAction = QAction(QIcon(':/icons/crosshair.png'), 'Cross Hair', self)
 		self.crosshairAction.setCheckable(True)
-		self.crosshairAction.setChecked(True)
+		self.crosshairAction.setChecked(False)
+		self.onCrosshairAction(False)
 		self.toolbar.addAction(self.crosshairAction)
 		self.toolbar.setIconSize(QSize(16,16))
 
