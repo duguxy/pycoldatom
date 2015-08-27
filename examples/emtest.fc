@@ -1,0 +1,14 @@
+terminals:
+nodes: [{'class': 'ImageView', 'name': 'ImageView.0', 'pos': (251.29282443365258, 102.26951824646392), 'state': {'geometry': PyQt5.QtCore.QRect(0, 0, 600, 600), 'pos': (251.29282443365258, 102.26951824646392), 'imageview': {'gradient': {'mode': 'rgb', 'ticks': [(1.0, (255, 255, 255, 255)), (0.8, (246, 246, 0, 255)), (0.5, (236, 0, 134, 255)), (0.0, (0, 0, 0, 255)), (0.2, (7, 0, 220, 255))]}, 'autoLevel': True}, 'bypass': False}}, {'class': 'Console', 'name': 'Console.0', 'pos': (656.9378341205025, 17.943580286658516), 'state': {'geometry': PyQt5.QtCore.QRect(600, 0, 710, 497), 'terminals': OrderedDict([('title', {'multi': False, 'multiable': False, 'renamable': False, 'removable': False, 'io': 'in', 'optional': False}), ('total', {'multi': False, 'multiable': True, 'renamable': True, 'removable': True, 'io': 'in', 'optional': False})]), 'pos': (656.9378341205025, 17.943580286658516), 'bypass': False}}, {'class': 'RectRoi', 'name': 'RectRoi.0', 'pos': (384.6568830012894, 92.97447340812198), 'state': {'color': (128, 128, 128, 255), 'path': '', 'pos': (384.6568830012894, 92.97447340812198), 'bypass': False, 'roi': {'size': (180.4028952427587, 188.72043612994065), 'pos': (247.34611758297297, 141.99059967866845), 'angle': 0.0}}}, {'class': 'sum', 'name': 'sum.0', 'pos': (513.8143591840129, 40.435839028708926), 'state': {'pos': (513.8143591840129, 40.435839028708926), 'bypass': False}}, {'class': 'Andor Camera', 'name': 'Andor Camera.0', 'pos': (0.0, 0.0), 'state': {'exposureTimeSpinBox': 0.03, 'vbinSpinBox': 1, 'shutterComboBox': 'Auto', 'frameNumberSpinBox': 1, 'triggerComboBox': 'External', 'temperatureSpinBox': 20, 'EMGainCheckBox': False, 'EMGainSpinBox': 2, 'hbinSpinBox': 1, 'preAmplifySlider': 0, 'frameTransferCheckBox': False, 'pos': (0.0, 0.0), 'bypass': False}}, {'class': 'Dict Select', 'name': 'Dict Select.0', 'pos': (117.74873735309166, 13.44155082183741), 'state': {'terminals': OrderedDict([('data', {'multi': False, 'multiable': False, 'renamable': False, 'removable': False, 'io': 'in', 'optional': False}), ('selected', {'multi': False, 'multiable': False, 'renamable': False, 'removable': False, 'io': 'out', 'optional': False})]), 'pos': (117.74873735309166, 13.44155082183741), 'selected': '0', 'bypass': False}}]
+outputNode:
+    terminals:
+    pos: (300.0, 0.0)
+    bypass: False
+connects: [('ImageView.0', 'view', 'RectRoi.0', 'view'), ('RectRoi.0', 'image', 'sum.0', 'input'), ('sum.0', 'output', 'Console.0', 'total'), ('Andor Camera.0', 'images', 'Dict Select.0', 'data'), ('Dict Select.0', 'selected', 'ImageView.0', 'image')]
+pos: (0.0, 0.0)
+geometry: PyQt5.QtCore.QRect(640, 259, 1280, 720)
+bypass: False
+inputNode:
+    terminals:
+    pos: (-150.0, 0.0)
+    bypass: False

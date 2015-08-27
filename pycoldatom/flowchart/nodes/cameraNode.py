@@ -39,11 +39,11 @@ class AndorNode(Node):
 
 	def saveState(self):
 		state = super().saveState()
-		state.update(self.cameraPanel.saveState())
+		state['camera'] = self.cameraPanel.saveState()
 		return state
 
 	def restoreState(self, state):
 		super().restoreState(state)
-		self.cameraPanel.restoreState(state)
+		self.cameraPanel.restoreState(state['camera'])
 
 nodelist = [AndorNode]

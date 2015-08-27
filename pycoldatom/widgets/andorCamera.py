@@ -25,10 +25,12 @@ class AndorCamera(QWidget):
 	sigAcquiredData = pyqtSignal(list)
 	SETTING_SAVE = ['frameNumberSpinBox', 'frameTransferCheckBox', 'exposureTimeSpinBox',
 			'shutterComboBox', 'triggerComboBox', 'hbinSpinBox', 'vbinSpinBox', 
-			'preAmplifySlider']
+			'preAmplifySlider', 'temperatureSpinBox', 'EMGainCheckBox', 'EMGainSpinBox']
 	
 	def __init__(self):
 		super().__init__()
+
+		self.lastTemp = None
 
 		self.layout = QGridLayout(self)
 		
@@ -51,7 +53,7 @@ class AndorCamera(QWidget):
 		self.progressBar.setEnabled(False)
 
 		self.tempLayout = QHBoxLayout()
-		self.tempLabel = QLabel('temp', self)
+		self.tempLabel = QLabel('OFF', self)
 		self.tempLayout.addWidget(self.tempLabel)
 		self.coolerCheckBox = QCheckBox('Cooler', self)
 		self.tempLayout.addWidget(self.coolerCheckBox)
@@ -112,13 +114,20 @@ class AndorCamera(QWidget):
 			if result == self.DRV_SUCCESS:
 				self.connectButton.setText('Disconnect')
 				self.sigStatusMessage.emit('Connected')
+				result = self.camera.GetTemperatureRange()
+				self.settingDialog.temperatureSpinBox.setRange(result['mintemp'], result['maxtemp'])
+				self.settingDialog.temperatureSpinBox.setValue(result['maxtemp'])
+				result = self.camera.GetEMGainRange()
+				self.settingDialog.EMGainSpinBox.setRange(result['low'], result['high'])
 				self.settingsButton.setEnabled(True)
 				self.startButton.setEnabled(True)
+				self.tempTimer.start()
 			else:
 				self.sigStatusMessage.emit('Connection Error: %s(%d)' % (self.values[result], result))
 
 		
 		elif self.connectButton.text() == 'Disconnect':
+			self.tempTimer.stop()
 			self.close_drv()
 			self.connectButton.setText('Connect')
 			self.settingsButton.setEnabled(False)
@@ -135,6 +144,8 @@ class AndorCamera(QWidget):
 			self.progressBar.setRange(0, self.settingDialog.frameNumberSpinBox.value())
 			self.progressBar.setValue(0)
 			self.progressBar.setEnabled(True)
+			self.camera.PrepareAcquisition()
+			self.camera.StartAcquisition()
 			self.acqTimer.start()
 		elif self.startButton.text() == 'Stop':
 			self.acqTimer.stop()
@@ -160,7 +171,18 @@ class AndorCamera(QWidget):
 			self.sigStatusMessage.emit('Status Error: %s(%d)' % (self.values[status], status))
 
 	def updateTemperature(self):
-		pass
+		temp = self.camera.GetTemperature()['temperature']
+		self.tempLabel.setText('%d ℃' % temp)
+
+		if self.lastTemp is not None:
+			if temp > self.lastTemp:
+				self.tempLabel.setStyleSheet("QLabel { background-color : red;}")
+			elif temp < self.lastTemp:
+				self.tempLabel.setStyleSheet("QLabel { background-color : blue;}")
+			else:
+				self.tempLabel.setStyleSheet("QLabel { background-color : green;}")
+
+		self.lastTemp = temp
 
 	def acquire(self):
 		result = self.camera.GetNumberNewImages()
@@ -171,6 +193,9 @@ class AndorCamera(QWidget):
 		frame_number = self.settingDialog.frameNumberSpinBox.value()
 		size = height * width * frame_number
 		data = np.empty(size, dtype=np.intc)
+		print(result['first'], result['last'])
+		if result['first'] == 0 and result['last'] == 0:
+			return
 		self.camera.GetImages(result['first'], result['last'], data.ctypes.data_as(POINTER(c_long)), size)
 		self.sigAcquiredData.emit([arr.reshape(width, height) for arr in np.split(data, frame_number)])
 
@@ -219,7 +244,11 @@ class AndorCamera(QWidget):
 		preamp = self.settingDialog.preAmplifySlider.value()
 		self.camera.SetPreAmpGain(preamp)
 
-		self.camera.PrepareAcquisition()
+		self.camera.SetTemperature(self.settingDialog.temperatureSpinBox.value())
+		if self.settingDialog.EMGainCheckBox.isChecked():
+			self.camera.SetEMCCDGain(self.settingDialog.EMGainSpinBox.value())
+		else:
+			self.camera.SetEMCCDGain(0)
 
 	def close(self):
 		self.close_drv()
@@ -231,7 +260,7 @@ class AndorCamera(QWidget):
 				if settingName.endswith(k):
 					break
 			else:
-				raise Exception('Unknown setting type')
+				raise Exception('Unknown setting type %s' % settingName)
 
 			setting = getattr(self.settingDialog, settingName)
 			state[settingName] = getattr(setting, stateFunc[k][0])()
@@ -243,7 +272,7 @@ class AndorCamera(QWidget):
 				if settingName.endswith(k):
 					break
 			else:
-				raise Exception('Unknown setting type')
+				raise Exception('Unknown setting type %s' % settingName)
 
 			setting = getattr(self.settingDialog, settingName)
 			getattr(setting, stateFunc[k][1])(settingState)

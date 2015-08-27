@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>372</width>
-    <height>214</height>
+    <width>380</width>
+    <height>262</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>170</y>
+     <y>220</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -34,8 +34,8 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>179</width>
-     <height>119</height>
+     <width>192</width>
+     <height>149</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -68,7 +68,7 @@
     <item row="2" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>Exposure Time (ms)</string>
+       <string>Exposure Time</string>
       </property>
      </widget>
     </item>
@@ -81,6 +81,9 @@
     </item>
     <item row="2" column="1">
      <widget class="QDoubleSpinBox" name="exposureTimeSpinBox">
+      <property name="suffix">
+       <string>ms</string>
+      </property>
       <property name="decimals">
        <number>4</number>
       </property>
@@ -95,7 +98,7 @@
     <item row="1" column="1">
      <widget class="QCheckBox" name="frameTransferCheckBox">
       <property name="text">
-       <string/>
+       <string> </string>
       </property>
      </widget>
     </item>
@@ -131,6 +134,23 @@
      <widget class="QSpinBox" name="frameNumberSpinBox">
       <property name="minimum">
        <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>Temperature</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QSpinBox" name="temperatureSpinBox">
+      <property name="suffix">
+       <string>℃</string>
+      </property>
+      <property name="prefix">
+       <string/>
       </property>
      </widget>
     </item>
@@ -200,8 +220,8 @@
     <rect>
      <x>210</x>
      <y>100</y>
-     <width>141</width>
-     <height>66</height>
+     <width>161</width>
+     <height>101</height>
     </rect>
    </property>
    <property name="title">
@@ -212,11 +232,25 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>121</width>
-      <height>26</height>
+      <width>146</width>
+      <height>75</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="EMGainSpinBox">
+       <property name="maximum">
+        <number>300</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>EM Gain</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
@@ -234,6 +268,20 @@
        </property>
        <property name="tickPosition">
         <enum>QSlider::TicksAbove</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="EMGainCheckBox">
+       <property name="text">
+        <string> </string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>EM Gain</string>
        </property>
       </widget>
      </item>
