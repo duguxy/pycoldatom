@@ -20,7 +20,7 @@ class CameraSettingDialog(QDialog, Ui_cameraSettingDialog):
 
 		self.setupUi(self)
 
-class AndorCamera(QWidget):
+class AndorCamera(QObject):
 	sigStatusMessage = pyqtSignal(str)
 	sigAcquiredData = pyqtSignal(list)
 	SETTING_SAVE = ['frameNumberSpinBox', 'frameTransferCheckBox', 'exposureTimeSpinBox',
@@ -30,49 +30,30 @@ class AndorCamera(QWidget):
 	def __init__(self):
 		super().__init__()
 
-		self.setWindowTitle('Andor Camera')
-
 		self.lastTemp = None
 		self.shot_mode = None
 		self.frames_to_shot = 0
 		self.frame_number = 0
 
 		self.frames = []
-
-		self.layout = QGridLayout(self)
 		
-		self.connectButton = QPushButton('Connect', self)
-		self.connectButton.clicked.connect(self.onConnect)
-		self.layout.addWidget(self.connectButton, 0, 0)
-
-		self.settingsButton = QPushButton('Settings', self)
-		self.settingsButton.clicked.connect(self.onSettings)
-		self.layout.addWidget(self.settingsButton, 0, 1)
-		self.settingsButton.setEnabled(False)
-
-		self.startButton = QPushButton('Start', self)
-		self.startButton.clicked.connect(self.onStart)
-		self.layout.addWidget(self.startButton, 0, 2)
-		self.startButton.setEnabled(False)
-
-		self.progressBar = QProgressBar(self)
-		self.layout.addWidget(self.progressBar, 1, 0, 1, 3)
+		self.progressBar = QProgressBar()
 		self.progressBar.setEnabled(False)
 
-		self.tempLayout = QHBoxLayout()
-		self.tempLabel = QLabel('OFF', self)
-		self.tempLayout.addWidget(self.tempLabel)
-		self.coolerCheckBox = QCheckBox('Cooler', self)
-		self.tempLayout.addWidget(self.coolerCheckBox)
-		self.coolerCheckBox.toggled.connect(self.onCooler)
+		self.tempLabel = QLabel('OFF')
 
-		self.layout.addLayout(self.tempLayout, 2, 0, 1, 3)
-		self.setLayout(self.layout)
+		self.toolbar = QToolBar('Camera')
+		self.connectAction = QAction('Connect', self.toolbar, triggered=self.onConnect)
+		self.toolbar.addAction(self.connectAction)
+		self.settingsAction = QAction('Settings', self.toolbar, triggered=self.onSettings)
+		self.toolbar.addAction(self.settingsAction)
+		self.startAction = QAction('Start', self.toolbar, triggered=self.onStart)
+		self.toolbar.addAction(self.startAction)
 
 		self.camera = None
 		self.flowchart = None
 		
-		self.settingDialog = CameraSettingDialog(self)
+		self.settingDialog = CameraSettingDialog()
 		self.settingDialog.setModal(True)
 		self.settingDialog.accepted.connect(self.setCamera)
 
@@ -109,7 +90,7 @@ class AndorCamera(QWidget):
 			result = self.camera.ShutDown().rval
 
 	def onConnect(self):
-		if self.connectButton.text() == 'Connect':
+		if self.connectAction.text() == 'Connect':
 			if self.camera is None:
 				self.init_drv()
 
@@ -119,38 +100,38 @@ class AndorCamera(QWidget):
 			QApplication.restoreOverrideCursor()
 
 			if result == self.DRV_SUCCESS:
-				self.connectButton.setText('Disconnect')
+				self.connectAction.setText('Disconnect')
 				self.sigStatusMessage.emit('Connected')
 				result = self.camera.GetTemperatureRange()
 				self.settingDialog.temperatureSpinBox.setRange(result['mintemp'], result['maxtemp'])
 				self.settingDialog.temperatureSpinBox.setValue(result['maxtemp'])
 				result = self.camera.GetEMGainRange()
 				self.settingDialog.EMGainSpinBox.setRange(result['low'], result['high'])
-				self.settingsButton.setEnabled(True)
-				self.startButton.setEnabled(True)
+				self.settingsAction.setEnabled(True)
+				self.startAction.setEnabled(True)
 				self.tempTimer.start()
-				self.setCamera
+				self.setCamera()
 			else:
 				self.sigStatusMessage.emit('Connection Error: %s(%d)' % (self.values[result], result))
 
 		
-		elif self.connectButton.text() == 'Disconnect':
+		elif self.connectAction.text() == 'Disconnect':
 			self.tempTimer.stop()
 			self.close_drv()
-			self.connectButton.setText('Connect')
-			self.settingsButton.setEnabled(False)
-			self.startButton.setEnabled(False)
+			self.connectAction.setText('Connect')
+			self.settingsAction.setEnabled(False)
+			self.startAction.setEnabled(False)
 			self.sigStatusMessage.emit('Disconnected')
 
 	def onSettings(self):
 		self.settingDialog.show()
 
 	def onStart(self):
-		if self.startButton.text() == 'Start':
-			self.connectButton.setEnabled(False)
-			self.settingsButton.setEnabled(False)
+		if self.startAction.text() == 'Start':
+			self.connectAction.setEnabled(False)
+			self.settingsAction.setEnabled(False)
 			self.camera.FreeInternalMemory()
-			self.startButton.setText('Stop')
+			self.startAction.setText('Stop')
 			self.progressBar.setRange(0, self.settingDialog.frameNumberSpinBox.value())
 			self.progressBar.setValue(0)
 			self.progressBar.setEnabled(True)
@@ -159,19 +140,13 @@ class AndorCamera(QWidget):
 			self.frames_to_shot = self.frame_number
 			self.frames = []
 			self.acqTimer.start()
-		elif self.startButton.text() == 'Stop':
-			self.connectButton.setEnabled(True)
-			self.settingsButton.setEnabled(True)
+		elif self.startAction.text() == 'Stop':
+			self.connectAction.setEnabled(True)
+			self.settingsAction.setEnabled(True)
 			self.acqTimer.stop()
 			self.camera.AbortAcquisition()
 			self.progressBar.setEnabled(False)
-			self.startButton.setText('Start')
-
-	def onCooler(self, checked):
-		if checked:
-			self.camera.CoolerON()
-		else:
-			self.camera.CoolerOFF()
+			self.startAction.setText('Start')
 
 	def updateProgress(self):
 		status = self.camera.GetStatus()['status']
@@ -274,7 +249,11 @@ class AndorCamera(QWidget):
 		preamp = self.settingDialog.preAmplifySlider.value()
 		self.camera.SetPreAmpGain(preamp)
 
-		self.camera.SetTemperature(self.settingDialog.temperatureSpinBox.value())
+		if self.settingDialog.coolerCheckBox.isChecked():
+			self.camera.CoolerON()
+			self.camera.SetTemperature(self.settingDialog.temperatureSpinBox.value())
+		else:
+			self.camera.CoolerOFF()
 		if self.settingDialog.EMGainCheckBox.isChecked():
 			self.camera.SetEMCCDGain(self.settingDialog.EMGainSpinBox.value())
 		else:
