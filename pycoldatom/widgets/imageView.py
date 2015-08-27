@@ -29,7 +29,6 @@ class ImageView(QWidget):
 		self.crosshairAction = QAction(QIcon(':/icons/crosshair.png'), 'Cross Hair', self)
 		self.crosshairAction.setCheckable(True)
 		self.crosshairAction.setChecked(False)
-		self.onCrosshairAction(False)
 		self.toolbar.addAction(self.crosshairAction)
 		self.toolbar.setIconSize(QSize(16,16))
 
@@ -64,6 +63,8 @@ class ImageView(QWidget):
 		self.crosshairAction.triggered.connect(self.onCrosshairAction)
 		self.proxy = pg.SignalProxy(self.imageItem.scene().sigMouseMoved, rateLimit=60,
 			slot=self.onMouseMoved)
+
+		self.onCrosshairAction(False)
 
 	def setImage(self, image):
 		self.image = image
