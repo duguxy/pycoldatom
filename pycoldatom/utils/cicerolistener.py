@@ -17,7 +17,7 @@ class CiceroListener(QThread):
 
 		self.port = port
 
-		self.socket.connect ("tcp://localhost:%d" % self.port)
+		self.socket.connect ("tcp://192.168.1.200:%d" % self.port)
 		self.topicfilter = b"Cicero: "
 		self.socket.setsockopt(zmq.SUBSCRIBE, self.topicfilter)
 

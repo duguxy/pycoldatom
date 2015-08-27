@@ -30,6 +30,7 @@ class ImageView(QWidget):
 		self.crosshairAction.setCheckable(True)
 		self.crosshairAction.setChecked(True)
 		self.toolbar.addAction(self.crosshairAction)
+		self.toolbar.setIconSize(QSize(16,16))
 
 		self.graphicsLayout = pg.GraphicsLayoutWidget(self)
 

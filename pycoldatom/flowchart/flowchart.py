@@ -17,6 +17,7 @@ class Flowchart(pgfc.Flowchart):
 		super().__init__(library=nodeLibrary, **kwargs)
 
 		self.win = QMainWindow()
+		self.win.setWindowTitle('Cold Atom Flowchart')
 		self.splitter = QSplitter()
 		self.splitter.addWidget(self.widget())
 		self.mdiArea = QMdiArea(self.win)
@@ -24,8 +25,8 @@ class Flowchart(pgfc.Flowchart):
 		self.win.setCentralWidget(self.splitter)
 
 		self.toolbar = self.win.addToolBar('Flowchart')
-		self.runAction = QAction(QIcon(':start.png'), 'Start', self.win, triggered=self.process)
-		self.toolbar.addAction(self.runAction)
+		# self.runAction = QAction(QIcon(':start.png'), 'Start', self.win, triggered=self.process)
+		# self.toolbar.addAction(self.runAction)
 
 		self.refreshAction = QAction(QIcon(':refresh.png'), 'Refresh', self.win, triggered=self.updateCurrentNode)
 		self.toolbar.addAction(self.refreshAction)
@@ -35,6 +36,9 @@ class Flowchart(pgfc.Flowchart):
 
 		app = QCoreApplication.instance()
 		app.lastWindowClosed.connect(self.clear)
+		app.lastWindowClosed.connect(self.clear_addon)
+
+		self.addon = {}
 
 	def updateCurrentNode(self):
 		name = self.mdiArea.currentSubWindow().windowTitle()
@@ -59,6 +63,9 @@ class Flowchart(pgfc.Flowchart):
 		node.flowchart = self
 		node.statusBar = self.statusBar
 
+		if hasattr(node, 'init_global'):
+			node.init_global(self)
+
 		return node
 
 	def setSubWindowTitle(self, node, oldname):
@@ -75,3 +82,7 @@ class Flowchart(pgfc.Flowchart):
 	def restoreState(self, state, **kwargs):
 		self.win.setGeometry(state['geometry'])
 		state = super().restoreState(state, **kwargs)
+
+	def clear_addon(self):
+		for k, a in self.addon.items():
+			a.close()

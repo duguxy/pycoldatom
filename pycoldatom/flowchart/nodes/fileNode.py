@@ -53,7 +53,9 @@ class SavematNode(Node):
 	nodePaths = [('File',)]
 
 	def __init__(self, name):
-		super().__init__(name, terminals={'data':{'io':'in'}}, allowAddInput=True)
+		super().__init__(name, terminals={'data':{'io':'in'}, 'title': {'io': 'out'}}, allowAddInput=True)
+
+		self.title = None
 
 		self.panel = QWidget()
 		self.layout = QGridLayout(self.panel)
@@ -100,6 +102,7 @@ class SavematNode(Node):
 				for variable, value in self.listener.commands['listvalue']:
 					suffix += '%s=%s' % (variable, value)
 			filename = getAutosaveFileName(time, suffix, self.fileInfixEdit.text(), self.folderSuffixEdit.text())
+			self.title = filename
 			path = os.path.join(self.pathEdit.text(), filename)
 			if os.path.exists(path):
 				return
@@ -108,6 +111,7 @@ class SavematNode(Node):
 			if not os.path.isdir(dirs):
 				os.makedirs(dirs)
 			savemat(path, data)
+		return {'title': self.title}
 
 	def ctrlWidget(self):
 		return self.panel

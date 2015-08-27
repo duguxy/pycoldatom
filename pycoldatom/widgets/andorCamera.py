@@ -30,7 +30,14 @@ class AndorCamera(QWidget):
 	def __init__(self):
 		super().__init__()
 
+		self.setWindowTitle('Andor Camera')
+
 		self.lastTemp = None
+		self.shot_mode = None
+		self.frames_to_shot = 0
+		self.frame_number = 0
+
+		self.frames = []
 
 		self.layout = QGridLayout(self)
 		
@@ -71,7 +78,7 @@ class AndorCamera(QWidget):
 
 		self.acqTimer = QTimer()
 		self.acqTimer.setSingleShot(False)
-		self.acqTimer.setInterval(500)
+		self.acqTimer.setInterval(200)
 		self.acqTimer.timeout.connect(self.updateProgress)
 
 		self.tempTimer = QTimer()
@@ -122,6 +129,7 @@ class AndorCamera(QWidget):
 				self.settingsButton.setEnabled(True)
 				self.startButton.setEnabled(True)
 				self.tempTimer.start()
+				self.setCamera
 			else:
 				self.sigStatusMessage.emit('Connection Error: %s(%d)' % (self.values[result], result))
 
@@ -139,6 +147,8 @@ class AndorCamera(QWidget):
 
 	def onStart(self):
 		if self.startButton.text() == 'Start':
+			self.connectButton.setEnabled(False)
+			self.settingsButton.setEnabled(False)
 			self.camera.FreeInternalMemory()
 			self.startButton.setText('Stop')
 			self.progressBar.setRange(0, self.settingDialog.frameNumberSpinBox.value())
@@ -146,8 +156,12 @@ class AndorCamera(QWidget):
 			self.progressBar.setEnabled(True)
 			self.camera.PrepareAcquisition()
 			self.camera.StartAcquisition()
+			self.frames_to_shot = self.frame_number
+			self.frames = []
 			self.acqTimer.start()
 		elif self.startButton.text() == 'Stop':
+			self.connectButton.setEnabled(True)
+			self.settingsButton.setEnabled(True)
 			self.acqTimer.stop()
 			self.camera.AbortAcquisition()
 			self.progressBar.setEnabled(False)
@@ -161,14 +175,27 @@ class AndorCamera(QWidget):
 
 	def updateProgress(self):
 		status = self.camera.GetStatus()['status']
-		if status == self.camera.DRV_IDLE:
-			self.acquire()
-			self.camera.StartAcquisition()
-		elif status == self.camera.DRV_ACQUIRING:
-			result = self.camera.GetAcquisitionProgress()
-			self.progressBar.setValue(result['series'])
-		else:
-			self.sigStatusMessage.emit('Status Error: %s(%d)' % (self.values[status], status))
+		if self.shot_mode == 'Kinetics':
+			if status == self.camera.DRV_IDLE:
+				self.acquire(self.frame_number)
+				self.sigAcquiredData.emit(list(self.frames))
+				self.frames = []
+				self.camera.StartAcquisition()
+			elif status == self.camera.DRV_ACQUIRING:
+				result = self.camera.GetAcquisitionProgress()
+				self.progressBar.setValue(result['series'])
+			else:
+				self.sigStatusMessage.emit('Status Error: %s(%d)' % (self.values[status], status))
+		elif self.shot_mode == 'FastKinetics':
+			if status == self.camera.DRV_IDLE:
+				self.frames_to_shot -= 2
+				self.acquire(2)
+				if self.frames_to_shot == 0:
+					self.sigAcquiredData.emit(list(self.frames))
+					self.frames_to_shot = self.frame_number
+					self.frames = []
+				self.camera.StartAcquisition()
+				self.progressBar.setValue(self.frame_number - self.frames_to_shot)
 
 	def updateTemperature(self):
 		temp = self.camera.GetTemperature()['temperature']
@@ -184,20 +211,21 @@ class AndorCamera(QWidget):
 
 		self.lastTemp = temp
 
-	def acquire(self):
-		result = self.camera.GetNumberNewImages()
+	def acquire(self, frame_number):
+		result = self.camera.GetNumberAvailableImages()
+		print(result['first'], result['last'])
+		if result['first'] == 0 and result['last'] == 0:
+			return
 		hbin = self.settingDialog.hbinSpinBox.value()
 		vbin = self.settingDialog.vbinSpinBox.value()
 		height = int(512/vbin)
 		width = int(512/hbin)
-		frame_number = self.settingDialog.frameNumberSpinBox.value()
+		# frame_number = self.frame_number
 		size = height * width * frame_number
 		data = np.empty(size, dtype=np.intc)
-		print(result['first'], result['last'])
-		if result['first'] == 0 and result['last'] == 0:
-			return
 		self.camera.GetImages(result['first'], result['last'], data.ctypes.data_as(POINTER(c_long)), size)
-		self.sigAcquiredData.emit([arr.reshape(width, height) for arr in np.split(data, frame_number)])
+		self.frames.extend([arr.reshape(width, height) for arr in np.split(data, frame_number)])
+			
 
 	# def init_settingsui(self):
 	# 	QML_FILENAME = os.path.join(os.path.dirname(__file__), 'CameraSettings.qml')
@@ -214,17 +242,19 @@ class AndorCamera(QWidget):
 		hbin = self.settingDialog.hbinSpinBox.value()
 		vbin = self.settingDialog.vbinSpinBox.value()
 		exposureTime = ctypes.c_float(self.settingDialog.exposureTimeSpinBox.value()/1000.0)
-		
+		framenumber = self.settingDialog.frameNumberSpinBox.value()
+		self.frame_number = framenumber
+
 		if self.settingDialog.frameTransferCheckBox.isChecked():
+			self.shot_mode = 'FastKinetics'
 			self.camera.SetAcquisitionMode(4)
 			self.camera.SetFastKinetics(512, 2, exposureTime, 4, hbin, vbin)
 		else:
+			self.shot_mode = 'Kinetics'
 			self.camera.SetAcquisitionMode(3)
 			self.camera.SetImage(hbin, vbin, 1, 512, 1, 512)
 			self.camera.SetExposureTime(exposureTime)
-
-		framenumber = self.settingDialog.frameNumberSpinBox.value()
-		self.camera.SetNumberKinetics(framenumber)
+			self.camera.SetNumberKinetics(framenumber)
 
 		trigger = self.settingDialog.triggerComboBox.currentText()
 		trigger_dict = {
