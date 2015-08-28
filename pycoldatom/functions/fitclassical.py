@@ -63,7 +63,7 @@ def analyse_gaussian(**kwargs):
 	ls = locals()
 	ls.update(kwargs)
 	s = Suppressor((NameError, KeyError), globals(), ls)
-	s("a['total'] = np.sqrt(2 * np.pi) * n0 * rx * ry")
+	s("a['total'] = 2 * np.pi * n0 * rx * ry")
 
 	return a
 

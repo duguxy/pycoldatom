@@ -46,8 +46,10 @@ class AndorCamera(QObject):
 		self.connectAction = QAction('Connect', self.toolbar, triggered=self.onConnect)
 		self.toolbar.addAction(self.connectAction)
 		self.settingsAction = QAction('Settings', self.toolbar, triggered=self.onSettings)
+		self.settingsAction.setEnabled(False)
 		self.toolbar.addAction(self.settingsAction)
 		self.startAction = QAction('Start', self.toolbar, triggered=self.onStart)
+		self.startAction.setEnabled(False)
 		self.toolbar.addAction(self.startAction)
 
 		self.camera = None
