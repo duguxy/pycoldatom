@@ -16,7 +16,7 @@ class FringeRemoveNode(Node):
 			'sigMask': {'io':'in'},
 			'ref1':{'io':'out'}
 		}
-		super().__init__(name, terminals=terminals)
+		super().__init__(name, terminals=terminals, bypass='ref')
 
 		paras_property = [
 			{'name': 'rank', 'type': 'int', 'readonly': True},
