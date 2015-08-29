@@ -1,7 +1,17 @@
 import numpy as np
 from scipy.optimize import leastsq
 from ..utils.exception import Suppressor
-from .fithelper import make_fit, make_generate, fit_result_wrap, generate_x, guess_general_2d
+from .fithelper import make_fit, make_generate, fit_result_wrap, generate_x, guess_general_2d, mask_bound
+
+# def guess_gaussian2(data):
+# 	if hasattr(data, 'mask'):
+# 		x0, x1, y0, y1 = mask_bound(data.mask)
+# 	else:
+# 		x1, y1 = data.shape
+# 		x0 = 0
+# 		y0 = 0
+# 	print(x0, x1, y0, y1)
+# 	return [1, (x0+x1)/2, (y0+y1)/2, (x1-x0)/4, (y1-y0)/4, 0]
 
 def guess_gaussian(data):
 	guess = guess_general_2d(data, p_mid=[0.75, 0.8])

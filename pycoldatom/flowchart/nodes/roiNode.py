@@ -82,7 +82,7 @@ class RoiNode(Node):
 			result['image'] = self.roi.getArrayRegion(image, imageItem)
 			result['mask'] = self.getMask(image, imageItem)
 			result['pos'] = self.roi.pos()
-			result['maskedImage'] = np.ma.array(image, mask=np.logical_not(result['mask']))
+			result['maskedImage'] = np.ma.array(image, mask=result['mask'])
 			return result
 
 	# def setInput(self, **args):
