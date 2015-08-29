@@ -1,50 +1,25 @@
-from mockCamera import mock_CLibrary
 from init_test import *
 
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from pycoldatom.flowchart import Flowchart
+from pycoldatom.functions.fringe import FringeRemove
+from pycoldatom.functions.refimages import add_noise
 
-from unittest.mock import patch
+import numpy as np
 
-# import logging
-# import sys
-
-# root = logging.getLogger()
-# root.setLevel(logging.DEBUG)
-
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# ch.setFormatter(formatter)
-# root.addHandler(ch)
-
-@patch('pyclibrary.CLibrary', mock_CLibrary)
-def test():
-	from pycoldatom.widgets.andorCamera import AndorCamera
-
-	app = QApplication([])
-	win = QMainWindow()
-	cam = AndorCamera()
-	cam.sigStatusMessage.connect(output)
-	win.setCentralWidget(cam)
-	win.show()
-	# fc = Flowchart()
-
-	# lena = fc.createNode('Andor Camera', pos=(0, 100))
-	# fc.win.show()
-	app.exec_()
-
-@patch('pyclibrary.CLibrary', mock_CLibrary)
-def test2():
-	app = QApplication([])
-	fc = Flowchart()
-
-	lena = fc.createNode('Andor Camera', pos=(0, 100))
-	fc.win.show()
-	app.exec_()
-
-def output(msg):
-	print(msg)
-
-if __name__ == '__main__':
-	test2()
+remover = FringeRemove(trunc=1e-10)
+n = 20
+dim = 1
+w, pos = np.meshgrid(np.random.rand(dim), np.arange(n))
+for i in range(10):
+	phase, pos = np.meshgrid(np.random.rand(dim), np.arange(n))
+	data = np.sin(w*pos + phase).sum(axis=1)
+	remover.updateLibrary(data)
+	U, s, V = remover.svd_result
+	print(remover.rank, np.diagonal(np.dot(U.T, U)))
+# print(U.shape, V.shape)
+phase, pos = np.meshgrid(np.random.rand(dim), np.arange(n))
+data = np.sin(w*pos + phase).sum(axis=1)
+mask = np.random.rand(n) < 0.5
+data1 = np.ma.array(data, mask=mask)
+x, data2 = remover.reconstruct(data1)
+print(data)
+print(data2)

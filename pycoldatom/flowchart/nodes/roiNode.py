@@ -131,8 +131,8 @@ class RectRoiNode(RoiNode):
 
 	def getMask(self, data, img):
 		sl, tr = self.roi.getArraySlice(data, img)
-		mask = np.zeros(data.shape)
-		mask[sl] = 1.0
+		mask = np.ones(data.shape)
+		mask[sl] = 0
 		return mask
 
 nodelist = [RectRoiNode]

@@ -3,6 +3,7 @@ import numpy as np
 import inspect
 from scipy.ndimage.filters import median_filter
 from ...utils.qt import setBusyCursor, recoverCursor
+from ...functions.opticaldepth import calculateOD
 
 def nodeFuncWrapper(func, nodename=None, paths=[('functions',)], interm=None, outterm=['output'], paras={}, cpuheavy=False):
 	if nodename is None:
@@ -47,20 +48,20 @@ def nodeFuncWrapper(func, nodename=None, paths=[('functions',)], interm=None, ou
 	return FuncNode
 
 nodelist = []
-for f in [np.exp, np.log]:
+for f in [np.exp, np.log, np.logical_not]:
 	nodelist.append(nodeFuncWrapper(f, paths=[('Math',)]))
+
+for f in [np.logical_and, np.logical_or]:
+	nodelist.append(nodeFuncWrapper(f, paths=[('Math',)], interm=['x1', 'x2']))
 
 for f in [np.add, np.subtract, np.divide, np.multiply]:
 	nodelist.append(nodeFuncWrapper(f, paths=[('Math',)], interm=['x1', 'x2']))
 
 for name, paras in zip(['sum', 'sumX', 'sumY'], [{}, {'axis':0}, {'axis':1}]):
-	nodelist.append(nodeFuncWrapper(np.sum, nodename=name, paths=[('Analysis',)], interm=['input'], paras=paras))
+	nodelist.append(nodeFuncWrapper(np.sum, nodename=name, paths=[('Math',)], interm=['input'], paras=paras))
 
-def calculateOD(sig, ref, bkg):
-	od = -np.log((sig-bkg) / (ref-bkg))
-	bad = np.logical_or(np.isinf(od), np.isnan(od))
-	od[bad] = 0.0
-	return od
+for name, paras in zip(['mean', 'meanX', 'meanY'], [{}, {'axis':0}, {'axis':1}]):
+	nodelist.append(nodeFuncWrapper(np.mean, nodename=name, paths=[('Math',)], interm=['input'], paras=paras))
 
 calculateODNode = nodeFuncWrapper(calculateOD, nodename='OD', paths=[('Analysis',)])
 nodelist.append(calculateODNode)
