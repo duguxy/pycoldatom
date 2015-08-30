@@ -9,15 +9,16 @@ class Plot(pg.GraphicsLayoutWidget):
         self.plot = self.addPlot()
         self.vLine = pg.InfiniteLine(angle=90, movable=False)
         self.hLine = pg.InfiniteLine(angle=0, movable=False)
-        self.label = pg.LabelItem(justify='left')
         self.addItem(self.plot)
         self.plot.addItem(self.vLine)
         self.plot.addItem(self.hLine)
         self.nextRow()
-        self.addItem(self.label)
+        self.label = self.addLabel('', col=1, justify='left')
         self.data = None
 
-        self.showCrossHair = True
+        self.showCrossHair = False
+        self.hLine.setVisible(False)
+        self.vLine.setVisible(False)
         self.crossHairAction = QtGui.QAction("Cross Hair", self, checkable=True)
         self.crossHairAction.triggered.connect(self.onCrossHair)
         self.crossHairAction.setChecked(self.showCrossHair)
