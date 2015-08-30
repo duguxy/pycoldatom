@@ -51,6 +51,9 @@ def fit_gaussian_result(data):
 	p0 = guess_gaussian(data)
 	p, cov_x, infodict, mesg, ier = fit_gaussian(data, p0, full_output=True)
 	result = fit_result_wrap(gaussian, p)
+	for x in ['rx', 'ry']:
+		result[x] = np.abs(result[x])
+
 	result.update(analyse_gaussian(**result))
 
 	if hasattr(data, 'mask'):
