@@ -28,7 +28,7 @@ class DictSelectNode(Node):
 	def setLabels(self, data):
 		self.data = data
 		self.labelmodel.clear()
-		for label in self.data:
+		for label in sorted(list(self.data.keys())):
 			if not label.startswith('_'):
 				self.labelmodel.appendRow(QStandardItem(label))
 		if self.label is not None and self.label in self.data:
