@@ -19,7 +19,7 @@ class ConsoleNode(Node):
 			if self.title != title:
 				self.console.write('<b>%s</b><br>' % title, html=True)
 				self.title = title
-		for k, v in kwargs.items():
+		for k, v in sorted(kwargs.items()):
 			if v is None:
 				continue
 			self.console.locals()[k+'_'] = v
