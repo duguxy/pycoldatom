@@ -190,7 +190,6 @@ class AndorCamera(QObject):
 
 	def acquire(self, frame_number):
 		result = self.camera.GetNumberAvailableImages()
-		print(result['first'], result['last'])
 		if result['first'] == 0 and result['last'] == 0:
 			return
 		hbin = self.settingDialog.hbinSpinBox.value()

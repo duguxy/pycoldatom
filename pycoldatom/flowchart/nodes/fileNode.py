@@ -99,7 +99,8 @@ class SavematNode(Node):
 			time = self.listener.commands['time']
 			suffix = ''
 			if 'listvalue' in self.listener.commands:
-				for variable, value in self.listener.commands['listvalue']:
+				listvalue = self.listener.commands['listvalue']
+				for variable, value in zip(listvalue[0::2], listvalue[1::2]):
 					suffix += '%s=%s' % (variable, value)
 			filename = getAutosaveFileName(time, suffix, self.fileInfixEdit.text(), self.folderSuffixEdit.text())
 			self.title = filename
