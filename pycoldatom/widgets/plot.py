@@ -2,11 +2,14 @@ import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 from pyqtgraph.Point import Point
+import itertools
+from collections import OrderedDict
 
 class Plot(pg.GraphicsLayoutWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.plot = self.addPlot()
+        self.plot.addLegend()
         self.vLine = pg.InfiniteLine(angle=90, movable=False)
         self.hLine = pg.InfiniteLine(angle=0, movable=False)
         self.addItem(self.plot)
@@ -31,16 +34,24 @@ class Plot(pg.GraphicsLayoutWidget):
         if self.data is not None and self.plot.sceneBoundingRect().contains(pos):
             mousePoint = self.plot.vb.mapSceneToView(pos)
             index = int(mousePoint.x())
-            if index > 0 and index < len(self.data):
-                self.label.setText("x=%0.1f, y=%0.1f" % (mousePoint.x(), self.data[index]))
-                if self.showCrossHair:
-                    self.vLine.setPos(mousePoint.x())
-                    self.hLine.setPos(self.data[index])
+            text = "x=%0.1f " % mousePoint.x()
+            for k, v in self.data.items():
+                try:
+                    text += "%s=%0.1f " % (k, v[index])
+                except IndexError:
+                    pass
+            self.label.setText(text)
+            if self.showCrossHair:
+                self.vLine.setPos(mousePoint.x())
+                self.hLine.setPos(mousePoint.y())
 
-    def setData(self, data, *args, **kwargs):
-        self.data = data
-        self.plot.clearPlots()
-        self.plot.plot(data, *args, **kwargs)
+    def setData(self, data, *args, display=True, **kwargs):
+        self.data = OrderedDict(sorted([(k,v) for k, v in data.items() if v is not None]))
+        self.plot.clear()
+        self.plot.legend.removeAllItem()
+        Colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+        for (k,v), c in zip(self.data.items(), itertools.cycle(Colors)):
+            self.plot.plot(v, pen=c, name=k)
 
     def onCrossHair(self, checked):
         self.showCrossHair = checked
@@ -54,3 +65,4 @@ class Plot(pg.GraphicsLayoutWidget):
 
     def restoreState(self, state):
         self.showCrossHair = state['showCrossHair']
+

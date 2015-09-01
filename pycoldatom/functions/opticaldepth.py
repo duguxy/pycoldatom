@@ -1,7 +1,7 @@
 import numpy as np
 
-def calculateOD(sig, ref, bkg):
-	od = -np.log((sig-bkg) / (ref-bkg))
-	bad = np.logical_or(np.isinf(od), np.isnan(od))
-	od[bad] = 0.0
+def calculateOD(sig, ref, bkg, min_step=1):
+	sig = np.maximum(sig-bkg, min_step)
+	ref = np.maximum(ref-bkg, min_step)
+	od = -np.log(sig/ref)
 	return od

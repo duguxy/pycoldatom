@@ -7,6 +7,7 @@ from init_flowchart import *
 
 app = QApplication([])
 fc = Flowchart()
+# fc.loadFile('plot2d.fc')
 # fr = fc.createNode('FringeRemovedOD')
 fc.win.show()
 app.exec_()
