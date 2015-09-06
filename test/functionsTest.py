@@ -8,6 +8,7 @@ class FunctionsTest(unittest.TestCase):
 		from pycoldatom.functions.fitclassical import generate_gaussian, fit_gaussian, guess_gaussian, fit_gaussian_result
 		
 		p, data = generate_gaussian(p0=[1.0, 40, 60, 15, 10, 0.1])
+		# p, data = generate_gaussian(p0=[1.0, 4, 6, 5, 3, 0.1], size=(10, 10))
 		data = add_noise(data)
 		# mask = np.random.random(data.shape)<0.1
 		mask = np.zeros_like(data)

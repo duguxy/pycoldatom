@@ -3,7 +3,7 @@ import importlib
 import traceback
 import logging
 
-logger = logging.getLogger('flowchart.nodes')
+logger = logging.getLogger('flowchart')
 path = os.path.dirname(os.path.abspath(__file__))
 nodelist = []
 for filename in os.listdir(path):

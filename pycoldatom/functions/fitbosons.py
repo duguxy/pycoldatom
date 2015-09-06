@@ -1,3 +1,6 @@
+import logging
+logger = logging,getLogger('flowchart.fit_boson')
+
 import numpy as np
 from scipy.optimize import leastsq
 from .polylog import g2, g2_1, g3_1
@@ -134,6 +137,7 @@ def guess_bose_bimodal(data):
 	# plt.plot(ry, bose_bimodal_simple(ry, *py), label='fit_y')
 	# plt.legend()
 	# plt.show()
+	logger.debug('Initial guess=%s' % guess)
 	return guess
 
 def analyse_bose_bimodal(**kwargs):

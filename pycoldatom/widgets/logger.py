@@ -36,7 +36,7 @@ class XStream(QtCore.QObject):
 
 logger = logging.getLogger('flowchart')
 handler = QtHandler()
-handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s: %(message)s"))
+handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s: (%(name)s) %(message)s"))
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 

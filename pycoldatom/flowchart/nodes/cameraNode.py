@@ -1,6 +1,9 @@
 from pyqtgraph.flowchart import Node
 from pyclibrary import CParser, CLibrary
 import os
+import logging
+logger = logging.getLogger('flowchart.camera')
+
 import ctypes
 
 from PyQt5.QtCore import *
@@ -23,7 +26,6 @@ class AndorNode(Node):
 		self.images = None
 
 	def init_global(self, flowchart):
-		print('init_global')
 		if 'AndorCamera' not in flowchart.addon:
 			self.camera = AndorCamera()
 			flowchart.addon['AndorCamera'] = self.camera
@@ -35,6 +37,7 @@ class AndorNode(Node):
 			self.camera = flowchart.addon['AndorCamera']
 
 		self.camera.sigAcquiredData.connect(self.onAcquisition)
+		logger.info('Init camera addon')
 
 	def showMessage(self, msg):
 		self.statusBar.showMessage(msg)

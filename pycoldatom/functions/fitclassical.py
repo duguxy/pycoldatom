@@ -2,7 +2,9 @@ import numpy as np
 from scipy.optimize import leastsq
 from ..utils.exception import Suppressor
 from .fithelper import make_fit, make_generate, fit_result_wrap, generate_x, guess_general_2d, mask_bound
+import logging
 
+logger = logging.getLogger('flowchart.fit_gaussian')
 # def guess_gaussian2(data):
 # 	if hasattr(data, 'mask'):
 # 		x0, x1, y0, y1 = mask_bound(data.mask)
@@ -14,7 +16,7 @@ from .fithelper import make_fit, make_generate, fit_result_wrap, generate_x, gue
 # 	return [1, (x0+x1)/2, (y0+y1)/2, (x1-x0)/4, (y1-y0)/4, 0]
 
 def guess_gaussian(data):
-	guess = guess_general_2d(data, p_mid=[0.75, 0.8])
+	guess = guess_general_2d(data, p_mid=[0.8, 0.9])
 
 	n0 = guess['peak']
 	offset = guess['offset']
@@ -23,7 +25,9 @@ def guess_gaussian(data):
 	a = np.sqrt(2 * np.log(n0 / guess['mid'][0]))
 	rx = guess['rx'][0] / a
 	ry = guess['ry'][0] / a
-	return [n0, x0, y0, rx, ry, offset]
+	p0 = [n0, x0, y0, rx, ry, offset]
+	logger.debug('Initial guess=%s' % p0)
+	return p0
 
 def gaussian(xy, n0, x0, y0, rx, ry, offset):
 	x, y = xy
