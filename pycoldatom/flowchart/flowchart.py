@@ -9,10 +9,13 @@ from PyQt5.QtGui import *
 
 from . import flowchart_rc
 from ..utils.qt import qtstr
+from ..widgets.logger import LoggerDialog
 
 class Flowchart(pgfc.Flowchart):
 
 	def __init__(self, **kwargs):
+		self.loggerDialog = LoggerDialog()
+
 		nodeLibrary = NodeLibrary()
 		super().__init__(library=nodeLibrary, **kwargs)
 
@@ -30,6 +33,8 @@ class Flowchart(pgfc.Flowchart):
 
 		self.refreshAction = QAction(QIcon(':refresh.png'), 'Refresh', self.win, triggered=self.updateCurrentNode)
 		self.toolbar.addAction(self.refreshAction)
+		self.loggerAction = QAction('Log', self.win, triggered=self.loggerDialog.showFront)
+		self.toolbar.addAction(self.loggerAction)
 
 		self.statusBar = QStatusBar(self.win)
 		self.win.setStatusBar(self.statusBar)

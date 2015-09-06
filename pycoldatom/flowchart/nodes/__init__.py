@@ -1,7 +1,9 @@
 import os
 import importlib
 import traceback
+import logging
 
+logger = logging.getLogger('flowchart.nodes')
 path = os.path.dirname(os.path.abspath(__file__))
 nodelist = []
 for filename in os.listdir(path):
@@ -15,6 +17,6 @@ for filename in os.listdir(path):
 		nodename = modname[0].upper() + modname[1:]
 		if hasattr(mod, 'nodelist'):
 			nodelist.extend(mod.nodelist)
-			print('Module %s loaded' % modname)
+			logger.info('Module %s loaded' % modname)
 	except Exception as e:
-		print(traceback.format_exc())
+		logger.error(traceback.format_exc())

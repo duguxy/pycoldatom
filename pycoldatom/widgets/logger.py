@@ -7,16 +7,8 @@ class QtHandler(logging.Handler):
 		logging.Handler.__init__(self)
 	def emit(self, record):
 		record = self.format(record)
-		if record: XStream.stdout().write('%s\n'%record)
-		# originally: XStream.stdout().write("{}\n".format(record))
-
-
-logger = logging.getLogger(__name__)
-handler = QtHandler()
-handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s: %(message)s"))
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
-
+		if record:
+			XStream.stdout().write('%s\n'%record)
 
 class XStream(QtCore.QObject):
 	_stdout = None
@@ -33,46 +25,35 @@ class XStream(QtCore.QObject):
 	def stdout():
 		if ( not XStream._stdout ):
 			XStream._stdout = XStream()
-			sys.stdout = XStream._stdout
+			# sys.stdout = XStream._stdout
 		return XStream._stdout
 	@staticmethod
 	def stderr():
 		if ( not XStream._stderr ):
 			XStream._stderr = XStream()
-			sys.stderr = XStream._stderr
+			# sys.stderr = XStream._stderr
 		return XStream._stderr
 
-class MyDialog(QtWidgets.QDialog):
+logger = logging.getLogger('flowchart')
+handler = QtHandler()
+handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s: %(message)s"))
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
+class LoggerDialog(QtWidgets.QDialog):
 	def __init__( self, parent = None ):
-		super(MyDialog, self).__init__(parent)
+		super().__init__(parent)
 
 		self._console = QtWidgets.QTextBrowser(self)
-		self._button  = QtWidgets.QPushButton(self)
-		self._button.setText('Test Me')
 
 		layout = QtWidgets.QVBoxLayout()
 		layout.addWidget(self._console)
-		layout.addWidget(self._button)
 		self.setLayout(layout)
 
 		XStream.stdout().messageWritten.connect( self._console.insertPlainText )
 		XStream.stderr().messageWritten.connect( self._console.insertPlainText )
 
-		self._button.clicked.connect(self.test)
-
-	def test( self ):
-		logger.debug('debug message')
-		logger.info('info message')
-		logger.warning('warning message')
-		logger.error('error message')
-		print('Old school hand made print message')
-
-if ( __name__ == '__main__' ):
-
-	app = None
-	if ( not QtWidgets.QApplication.instance() ):
-		app = QtWidgets.QApplication([])
-	dlg = MyDialog()
-	dlg.show()
-	if ( app ):
-		app.exec_()
+	def showFront(self):
+		self.show()
+		self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+		self.activateWindow()
