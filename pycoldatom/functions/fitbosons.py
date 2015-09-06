@@ -1,5 +1,5 @@
 import logging
-logger = logging,getLogger('flowchart.fit_boson')
+logger = logging.getLogger('flowchart.fit_boson')
 
 import numpy as np
 from scipy.optimize import leastsq
