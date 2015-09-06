@@ -63,5 +63,5 @@ for name, paras in zip(['sum', 'sumX', 'sumY'], [{}, {'axis':0}, {'axis':1}]):
 for name, paras in zip(['mean', 'meanX', 'meanY'], [{}, {'axis':0}, {'axis':1}]):
 	nodelist.append(nodeFuncWrapper(np.mean, nodename=name, paths=[('Math',)], interm=['input'], paras=paras))
 
-calculateODNode = nodeFuncWrapper(calculateOD, nodename='OD', paths=[('Analysis',)])
+calculateODNode = nodeFuncWrapper(calculateOD, nodename='OD', paths=[('Analysis',)], outterm=['od', 'od_0'])
 nodelist.append(calculateODNode)
