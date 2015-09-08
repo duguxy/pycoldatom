@@ -6,6 +6,13 @@ from scipy.misc import lena
 from PyQt5.QtWidgets import *
 
 class ConsoleNode(Node):
+	"""Node providing a console for showing results and debugging
+
+	Input terminals:
+	- title: the title of current results. Title won't be printed until it is changed
+	- added inputs: item to be print in the console
+	"""
+
 	nodeName = 'Console'
 	nodePaths = [('Debug',)]
 
@@ -39,40 +46,36 @@ class ConsoleNode(Node):
 		self.subwin.setGeometry(state['geometry'])
 
 class LenaNode(Node):
+	"""Node for outputing a standard Lena image
+
+	Output terminals:
+	- lena: lena image
+	"""
+
 	nodeName = 'Lena'
 	nodePaths = [('Debug',)]
 	def __init__(self, name, **kwargs):
 		terminals={
-			'lena': {'io':'out'}
+			'lena': {'io':'out'} # lena image
 		}
 		super().__init__(name, terminals=terminals, **kwargs)
 
 	def process(self, display=True):
 		return {'lena': lena()}
 
-class DebugOutputNode(Node):
-	nodeName = 'Output'
-	nodePaths = [('Debug',)]
-	def __init__(self, name, **kwargs):
-		terminals={
-			'output': {'io':'out'}
-		}
-		super().__init__(name, terminals=terminals, **kwargs)
-
-	def setOutput(output):
-		self.out = output
-		self.setOutput(output=self.out)
-
-	def process(self, display=True):
-		return {'output': self.out}
-
 class EvalNode(Node):
+	"""Node for eval
+
+	Output terminals:
+	- output: return of eval
+	"""
+
 	nodeName = 'Eval'
 	nodePaths = [('Debug',)]
 
 	def __init__(self, name, **kwargs):
 		terminals={
-			'output': {'io':'out'}
+			'output': {'io':'out'} # result of eval
 		}
 		super().__init__(name, terminals=terminals, allowAddInput=True, **kwargs)
 

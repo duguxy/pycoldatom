@@ -1,3 +1,9 @@
+"""
+In order to be imported into node library, a .py file should:
+- endswith 'Node'
+- contain a global variable nodelist, which is a list object with all the node class to be imported
+"""
+
 import os
 import importlib
 import traceback

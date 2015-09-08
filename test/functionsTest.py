@@ -65,7 +65,7 @@ class FunctionsTest(unittest.TestCase):
 		# print('max:', np.max(err), np.max(rerr))
 		# print('min:', np.min(err), np.min(rerr))
 		# print('std:', np.std(err), np.std(rerr))
-		np.testing.assert_allclose(result, ref, rtol=1e-7, atol=1.5e-7)
+		np.testing.assert_allclose(result, ref, rtol=0e-7, atol=2e-7)
 
 
 if __name__ == '__main__':

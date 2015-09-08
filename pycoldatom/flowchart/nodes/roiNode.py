@@ -7,6 +7,18 @@ import os
 from PyQt5.QtWidgets import *
 
 class RoiNode(Node):
+	"""Node for adding region-of-interest in imageview
+
+	Input terminals:
+	- view: imageview object
+
+	Output terminals:
+	- pos: ROI position
+	- image: image in the ROI
+	- mask: the mask array, false inside the ROI, true outside 
+	- maskedImage: maksedarray object of numpy, with images outside the ROI masked
+	"""
+
 	roiDirectoryPath = ''
 
 	def __init__(self, name, **kwargs):
@@ -120,6 +132,8 @@ class RoiNode(Node):
 		self.roiDirectoryPath = state['path']
 
 class RectRoiNode(RoiNode):
+	"""Rectangle ROI node"""
+
 	nodeName = 'RectRoi'
 	nodePaths = [('Display',)]
 	def makeRoi(self):

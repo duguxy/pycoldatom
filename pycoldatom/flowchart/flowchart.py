@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# flowchart.py
+
 import pyqtgraph.flowchart as pgfc
 from pyqtgraph.widgets.FileDialog import FileDialog
 from .nodeLibrary import NodeLibrary
@@ -12,6 +15,7 @@ from ..utils.qt import qtstr
 from ..widgets.logger import LoggerDialog
 
 class Flowchart(pgfc.Flowchart):
+	"""Flowchart with MDI windows for nodes"""
 
 	def __init__(self, **kwargs):
 		self.loggerDialog = LoggerDialog()
@@ -19,7 +23,7 @@ class Flowchart(pgfc.Flowchart):
 		nodeLibrary = NodeLibrary()
 		super().__init__(library=nodeLibrary, **kwargs)
 
-		self.win = QMainWindow()
+		self.win = QMainWindow() # main window of flowchart
 		self.win.setWindowTitle('Cold Atom Flowchart')
 		self.splitter = QSplitter()
 		self.splitter.addWidget(self.widget())
@@ -28,8 +32,6 @@ class Flowchart(pgfc.Flowchart):
 		self.win.setCentralWidget(self.splitter)
 
 		self.toolbar = self.win.addToolBar('Flowchart')
-		# self.runAction = QAction(QIcon(':start.png'), 'Start', self.win, triggered=self.process)
-		# self.toolbar.addAction(self.runAction)
 
 		self.refreshAction = QAction(QIcon(':refresh.png'), 'Refresh', self.win, triggered=self.updateCurrentNode)
 		self.toolbar.addAction(self.refreshAction)
@@ -46,10 +48,14 @@ class Flowchart(pgfc.Flowchart):
 		self.addon = {}
 
 	def updateCurrentNode(self):
+		"""Update the node whose subwindow has focus"""
+
 		name = self.mdiArea.currentSubWindow().windowTitle()
 		self._nodes[name].update()
 
 	def createNode(self, *args, **kwargs):
+		"""Overrided method for registering sub windows of nodes and global addons"""
+
 		node = super().createNode(*args, **kwargs)
 
 		if hasattr(node, 'widget'):
@@ -68,6 +74,7 @@ class Flowchart(pgfc.Flowchart):
 		node.flowchart = self
 		node.statusBar = self.statusBar
 
+		# if a node supports a global addon, it will initiate here
 		if hasattr(node, 'init_global'):
 			node.init_global(self)
 
@@ -89,5 +96,7 @@ class Flowchart(pgfc.Flowchart):
 		state = super().restoreState(state, **kwargs)
 
 	def clear_addon(self):
+		"""Close all global addons"""
+
 		for k, a in self.addon.items():
 			a.close()

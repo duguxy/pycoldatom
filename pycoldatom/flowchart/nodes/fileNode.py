@@ -14,6 +14,14 @@ from ...utils.autosave import getAutosaveFileName
 from ...utils.cicerolistener import CiceroListener
 
 class LoadmatNode(Node):
+	"""Node for loading a .mat file of MATLAB.
+	Files are selected in a simple explorer
+
+	Output terminals:
+	- title: file name
+	- data: return of scipy.loadmat
+	"""
+
 	nodeName = 'Load mat'
 	nodePaths = [('File',)]
 
@@ -49,6 +57,16 @@ class LoadmatNode(Node):
 		self.subwin.setGeometry(state['geometry'])
 
 class SavematNode(Node):
+	"""Node for saving mat file and automatically generate filename
+	This node is used only with Cicero modified to support zmq.
+
+	Input terminals:
+	- data: data to be saved in mat. Usually a dict
+
+	Output terminals:
+	- title: saved file name
+	"""
+
 	nodeName = 'Save mat'
 	nodePaths = [('File',)]
 

@@ -14,6 +14,12 @@ from ...widgets.andorCamera import AndorCamera
 from ...utils.qt import stateFunc
 
 class AndorNode(Node):
+	"""Node controlling Andor iXon Ultra 897 camera
+
+	Output terminals
+	- images: acquired images
+	"""
+
 	nodeName = "Andor Camera"
 	nodePaths = [('Camera',)]
 
@@ -26,6 +32,8 @@ class AndorNode(Node):
 		self.images = None
 
 	def init_global(self, flowchart):
+		"""The entry point for initialize camera globally"""
+
 		if 'AndorCamera' not in flowchart.addon:
 			self.camera = AndorCamera()
 			flowchart.addon['AndorCamera'] = self.camera
@@ -44,7 +52,6 @@ class AndorNode(Node):
 
 	def onAcquisition(self, data):
 		self.images = {str(i+1): img for i, img in enumerate(data)}
-		# print(self.images)
 		self.setOutput(images=self.images)
 
 	def process(self, display=True):
@@ -61,21 +68,5 @@ class AndorNode(Node):
 	def restoreState(self, state):
 		super().restoreState(state)
 		self.camera.restoreState(state['camera'])
-
-class AndorGlobalNode(AndorNode):
-	nodeName = "Andor Camera Global"
-	nodePaths = [('Camera',)]
-
-	def init_camera(self):
-		pass
-
-	def init_global(self, flowchart):
-		pass
-
-	def close(self):
-		super(AndorNode, self).close()
-
-	def ctrlWidget(self):
-		pass
 
 nodelist = [AndorNode]

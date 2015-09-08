@@ -4,6 +4,16 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 class DictSelectNode(Node):
+	"""Node for selecting items from or unpacking a dict
+
+	Input terminals:
+	- data: a dictionary
+
+	Outputs terminals:
+	- selected: the item selected in ctrl widget
+	- added outputs: the values corresponding to the output terminal names
+	"""
+
 	nodeName = 'Dict Select'
 	nodePaths = [('Misc',)]
 
@@ -59,6 +69,13 @@ class DictSelectNode(Node):
 		self.label = state['selected']
 
 class DictCombineNode(Node):
+	""" Node for adding items into a dict
+
+	Input terminals:
+	- dic: the dict to be added into. If None, an empty dict will be created
+	- added inputs: the key-value pair (terminal name, terminal value) will be added into dic
+	"""
+
 	nodeName = 'Dict Combine'
 	nodePaths = [('Misc',)]
 

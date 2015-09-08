@@ -5,6 +5,8 @@ from ...functions.fringe import FringeRemove
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
 class FringeRemoveNode(Node):
+	"""Node for removing fringes"""
+
 	nodeName = 'FringeRemove'
 	nodePaths = [('Analysis',)]
 

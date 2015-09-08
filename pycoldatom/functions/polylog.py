@@ -226,16 +226,9 @@ def g_three(x):
 
 # g2_1 = np.pi**2 / 6
 
-def g2_deprecated(x):
-	# print(np.min((x - 1) ** 2 + 1 - np.sign(1-x)))
-	# np.testing.assert_array_less(0, x)
-	x2 = (x - 1) ** 2
-	x2 = np.where(x2==0.0, 1, x2)
-	return np.log(x2) * (x - 1) * (-25 + x*(23 + x*(-13 + 3*x))) / 24 + \
-		(3.758456287028533e-7*0 + x*(3.083272601141418 + x*(-0.3737975183428218 + (0.660849876845528 + 0.7434313817195289*x)*x))) / \
-		(1. + x*(0.7566282665698395 + x*(0.2985438604462222 + (0.22377340505406434 + 0.22191915774524565*x)*x)))
-
 def g2(x):
+	"""A fast low precision g2 function consisting of pure numpy methods with maximum absolute error less than 2e-7 in [0, 1]"""
+
 	x2 = (x - 1) ** 2
 	x2 = np.where(x2==0.0, 1, x2)
 	return np.log(x2) * (147 + x*(-360 + x*(450 + x*(-400 + x*(225 + x*(-72 + 10*x)))))) / 120 + \
@@ -244,6 +237,7 @@ def g2(x):
 
 def g2_fp_(x):
 	return fp.polylog(2, x)
+
 g2_fp = np.vectorize(g2_fp_)
 g2_old = np.vectorize(g_two)
 g52 = np.vectorize(g5halves)

@@ -11,6 +11,8 @@ FitBoseBimodalNode = nodeFuncWrapper(fit_bose_bimodal_result,
 	outterm=['result', 'err'], cpuheavy=True)
 
 def fit_gaussian_result_extended(data):
+	"""Besides fit result, the data and fit along x0 and y0 are provided"""
+
 	result, err = fit_gaussian_result(data)
 	fit = err + data
 	x0 = int(result['x0'])
@@ -33,6 +35,8 @@ FitGaussianExNode = nodeFuncWrapper(fit_gaussian_result_extended,
 	cpuheavy=True)
 
 def fit_bose_bimodal_result_extended(data):
+	"""Besides fit result, the data and fit along x0 and y0 are provided"""
+	
 	result, err = fit_bose_bimodal_result(data)
 	fit = err + data
 	x0 = int(result['x0'])

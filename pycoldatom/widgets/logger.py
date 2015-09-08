@@ -1,3 +1,5 @@
+"""modified from http://stackoverflow.com/questions/24469662/how-to-redirect-logger-output-into-pyqt-text-widget"""
+
 import sys
 from PyQt5 import QtCore, QtWidgets, QtWidgets
 import logging

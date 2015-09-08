@@ -1,4 +1,6 @@
 class Suppressor:
+	"""Suppress exception, modified from
+	http://stackoverflow.com/questions/7271245/python-clean-way-to-wrap-individual-statements-in-a-try-except-block"""
 	def __init__(self, exception_type, globalscope=None, localscope=None):
 		self._exception_type = exception_type
 		self._gs = globalscope

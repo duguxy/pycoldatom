@@ -2,6 +2,15 @@ from pyqtgraph.flowchart import Node
 from ...widgets.imageView import ImageView
 
 class ImageViewNode(Node):
+	""" Node for viewing images
+
+	Input terminals:
+	- image: image to be shown
+
+	Output terminals:
+	- view: the ImageView object
+	"""
+
 	nodeName = 'ImageView'
 	nodePaths = [('Display',)]
 

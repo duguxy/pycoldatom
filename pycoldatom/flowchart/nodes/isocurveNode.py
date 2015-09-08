@@ -3,6 +3,13 @@ import pyqtgraph as pg
 from PyQt5.QtWidgets import *
 
 class IsocurveNode(Node):
+	"""Node for adding isocurve in imageview
+
+	Input terminals:
+	- view: imageview object
+	- level: the isocurve level
+	"""
+
 	nodeName = 'Isocurve'
 	nodePaths = [('Display',)]
 

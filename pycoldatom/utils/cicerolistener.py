@@ -5,6 +5,8 @@ from PyQt5.QtGui import *
 import zmq
 
 class CiceroListener(QThread):
+	"""A listener receive sequence information from Cicero"""
+
 	sigCiceroRunning = pyqtSignal(list)
 	sigCiceroListvalue = pyqtSignal(list)
 	sigCiceroTime = pyqtSignal(list)
