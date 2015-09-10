@@ -100,4 +100,4 @@ class EvalNode(Node):
 		super().restoreState(state)
 		self.evalEdit.setText(state['eval'])
 
-nodelist = [LenaNode, DebugOutputNode, ConsoleNode, EvalNode]
+nodelist = [LenaNode, ConsoleNode, EvalNode]
