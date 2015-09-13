@@ -22,6 +22,7 @@ class FringeRemoveNode(Node):
 
 		paras_property = [
 			{'name': 'rank', 'type': 'int', 'readonly': True},
+			{'name': 'rankLimit', 'type': 'int', 'value': 100},
 			{'name': 'trunc', 'type': 'float'},
 			{'name': 'updateLib', 'type': 'bool'},
 			{'name': 'reset', 'type': 'action'}
@@ -34,13 +35,17 @@ class FringeRemoveNode(Node):
 
 		self.paras.param('reset').sigActivated.connect(self.remover.reset)
 	
+	def onReset(self):
+		self.remover.reset()
+		self.paras['rank'] = 0
+
 	def ctrlWidget(self):
 		return self.paratree
 
 	def process(self, sig, ref, bkg, sigMask, display=True):
 		self.remover.setTrunc(self.paras['trunc'])
 		ref = ref - bkg
-		if self.paras['updateLib']:
+		if self.paras['updateLib'] and self.paras['rank'] <= self.paras['rankLimit']:
 			self.remover.updateLibrary(ref)
 			self.paras['rank'] = self.remover.rank
 		sig = sig - bkg

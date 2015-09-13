@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as npl
 from scipy.linalg import block_diag
 
-trunc = 1.0
+trunc = 0.0
 
 def incre_svd():
 	""" Incremental SVD generator, see 
@@ -11,7 +11,8 @@ def incre_svd():
 	"""
 
 	c = yield
-	s = np.array([npl.norm(c)])
+	s = np.array([npl.norm(c.astype(float))])
+	# s = npl.norm(c.astype(float), axis=1)
 	U0 = c / s
 	Up = 1.0
 	V0 = 1.0
@@ -23,7 +24,6 @@ def incre_svd():
 		U = np.dot(U0, Up)
 		V = np.dot(V0, Vp)
 		c = yield U, s, V
-
 		if c is None:
 			continue
 
