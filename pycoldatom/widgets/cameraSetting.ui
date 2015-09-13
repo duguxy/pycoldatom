@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>380</width>
-    <height>262</height>
+    <height>354</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>220</y>
+     <x>20</x>
+     <y>310</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -35,14 +35,113 @@
      <x>10</x>
      <y>10</y>
      <width>192</width>
-     <height>149</height>
+     <height>280</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_12">
       <property name="text">
-       <string>Trigger</string>
+       <string>Vertical Voltage</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QCheckBox" name="coolerCheckBox">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QSpinBox" name="verticalSpeedSpinBox"/>
+    </item>
+    <item row="6" column="1">
+     <widget class="QSpinBox" name="temperatureSpinBox">
+      <property name="suffix">
+       <string>℃</string>
+      </property>
+      <property name="prefix">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>Temperature</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="frameNumberSpinBox">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>Frame Number</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="triggerComboBox">
+      <item>
+       <property name="text">
+        <string>Internal</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>External</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>Frame Transfer</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QCheckBox" name="frameTransferCheckBox">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QDoubleSpinBox" name="exposureTimeSpinBox">
+      <property name="suffix">
+       <string>ms</string>
+      </property>
+      <property name="decimals">
+       <number>4</number>
+      </property>
+      <property name="minimum">
+       <double>0.001000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Shutter</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Exposure Time</string>
       </property>
      </widget>
     </item>
@@ -65,91 +164,54 @@
       </item>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>Exposure Time</string>
+       <string>Trigger</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Shutter</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QDoubleSpinBox" name="exposureTimeSpinBox">
-      <property name="suffix">
-       <string>ms</string>
-      </property>
-      <property name="decimals">
+    <item row="7" column="1">
+     <widget class="QSpinBox" name="verticalVoltageSpinBox">
+      <property name="maximum">
        <number>4</number>
       </property>
-      <property name="minimum">
-       <double>0.001000000000000</double>
-      </property>
-      <property name="maximum">
-       <double>1000.000000000000000</double>
-      </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QCheckBox" name="frameTransferCheckBox">
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_13">
       <property name="text">
-       <string> </string>
+       <string>Vertical Speed</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_7">
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_14">
       <property name="text">
-       <string>Frame Transfer</string>
+       <string>Horizontal Speed</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
-     <widget class="QComboBox" name="triggerComboBox">
-      <item>
-       <property name="text">
-        <string>Internal</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>External</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Frame Number</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QSpinBox" name="frameNumberSpinBox">
-      <property name="minimum">
-       <number>1</number>
-      </property>
-     </widget>
+    <item row="10" column="1">
+     <widget class="QSpinBox" name="horizontalVoltageSpinBox"/>
     </item>
     <item row="5" column="0">
-     <widget class="QLabel" name="label_10">
+     <widget class="QLabel" name="label_15">
       <property name="text">
-       <string>Temperature</string>
+       <string>Cooler</string>
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
-     <widget class="QSpinBox" name="temperatureSpinBox">
-      <property name="suffix">
-       <string>℃</string>
+    <item row="9" column="1">
+     <widget class="QLabel" name="verticalSpeedLabel">
+      <property name="text">
+       <string/>
       </property>
-      <property name="prefix">
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QLabel" name="horizontalSpeedLabel">
+      <property name="text">
        <string/>
       </property>
      </widget>
@@ -274,7 +336,7 @@
      <item row="1" column="1">
       <widget class="QCheckBox" name="EMGainCheckBox">
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </widget>
      </item>

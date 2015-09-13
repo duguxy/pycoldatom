@@ -25,7 +25,8 @@ class AndorCamera(QObject):
 	sigAcquiredData = pyqtSignal(list)
 	SETTING_SAVE = ['frameNumberSpinBox', 'frameTransferCheckBox', 'exposureTimeSpinBox',
 			'shutterComboBox', 'triggerComboBox', 'hbinSpinBox', 'vbinSpinBox', 
-			'preAmplifySlider', 'temperatureSpinBox', 'EMGainCheckBox', 'EMGainSpinBox']
+			'preAmplifySlider', 'temperatureSpinBox', 'EMGainCheckBox', 'EMGainSpinBox',
+			'verticalVoltageSpinBox', 'verticalSpeedSpinBox', 'horizontalVoltageSpinBox']
 	
 	def __init__(self):
 		super().__init__()
@@ -58,6 +59,10 @@ class AndorCamera(QObject):
 		self.settingDialog = CameraSettingDialog()
 		self.settingDialog.setModal(True)
 		self.settingDialog.accepted.connect(self.setCamera)
+
+		self.settingDialog.verticalSpeedSpinBox.valueChanged.connect(self.onVerticalSpeedChanged)
+		self.settingDialog.horizontalVoltageSpinBox.valueChanged.connect(self.onHorizontalSpeedChanged)
+		self.settingDialog.EMGainCheckBox.toggled.connect(self.onEMGainChecked)
 
 		self.acqTimer = QTimer()
 		self.acqTimer.setSingleShot(False)
@@ -104,11 +109,26 @@ class AndorCamera(QObject):
 			if result == self.DRV_SUCCESS:
 				self.connectAction.setText('Disconnect')
 				self.sigStatusMessage.emit('Connected')
+				if self.settingDialog.EMGainCheckBox.isChecked():
+					self.ampl_type = 0
+				else:
+					self.ampl_type = 1
 				result = self.camera.GetTemperatureRange()
 				self.settingDialog.temperatureSpinBox.setRange(result['mintemp'], result['maxtemp'])
 				self.settingDialog.temperatureSpinBox.setValue(result['maxtemp'])
+				self.settingDialog.coolerCheckBox.setChecked(False)
 				result = self.camera.GetEMGainRange()
 				self.settingDialog.EMGainSpinBox.setRange(result['low'], result['high'])
+				result = self.camera.GetNumberVSAmplitudes()
+				self.settingDialog.verticalVoltageSpinBox.setRange(0, result['number']-1)
+				result = self.camera.GetNumberVSSpeeds()
+				self.settingDialog.verticalSpeedSpinBox.setRange(0, result['speeds']-1)
+				value = self.settingDialog.verticalSpeedSpinBox.value()
+				self.onVerticalSpeedChanged(value)
+				result = self.camera.GetNumberHSSpeeds(0, self.ampl_type)
+				value = self.settingDialog.horizontalVoltageSpinBox.value()
+				self.onHorizontalSpeedChanged(value)
+				self.settingDialog.horizontalVoltageSpinBox.setRange(0, result['speeds']-1)
 				self.settingsAction.setEnabled(True)
 				self.startAction.setEnabled(True)
 				self.tempTimer.start()
@@ -124,6 +144,26 @@ class AndorCamera(QObject):
 			self.settingsAction.setEnabled(False)
 			self.startAction.setEnabled(False)
 			self.sigStatusMessage.emit('Disconnected')
+
+	def onEMGainChecked(self, checked):
+		if checked:
+			self.ampl_type = 0
+			self.settingDialog.EMGainSpinBox.setEnabled(True)
+		else:
+			self.ampl_type = 1
+			self.settingDialog.EMGainSpinBox.setEnabled(False)
+		result = self.camera.GetNumberHSSpeeds(0, self.ampl_type)
+		self.settingDialog.horizontalVoltageSpinBox.setRange(0, result['speeds']-1)
+		value = self.settingDialog.horizontalVoltageSpinBox.value()
+		self.onHorizontalSpeedChanged(value)
+
+	def onVerticalSpeedChanged(self, value):
+		result = self.camera.GetVSSpeed(value)
+		self.settingDialog.verticalSpeedLabel.setText('%fMHz' % result['speed'])
+
+	def onHorizontalSpeedChanged(self, value):
+		result = self.camera.GetHSSpeed(0, self.ampl_type, value)
+		self.settingDialog.horizontalSpeedLabel.setText('%fMHz' % result['speed'])
 
 	def onSettings(self):
 		self.settingDialog.show()
@@ -259,6 +299,15 @@ class AndorCamera(QObject):
 			self.camera.SetEMCCDGain(self.settingDialog.EMGainSpinBox.value())
 		else:
 			self.camera.SetEMCCDGain(0)
+
+		vvoltage = self.settingDialog.verticalVoltageSpinBox.value()
+		self.camera.SetVSAmplitude(vvoltage)
+
+		vspeed = self.settingDialog.verticalSpeedSpinBox.value()
+		self.camera.SetVSSpeed(vspeed)
+
+		hspeed = self.settingDialog.horizontalVoltageSpinBox.value()
+		self.camera.SetHSSpeed(self.ampl_type, hspeed)
 
 	def close(self):
 		self.close_drv()

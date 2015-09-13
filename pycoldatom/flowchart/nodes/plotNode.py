@@ -22,4 +22,13 @@ class Plot2dNode(Node):
 		if kwargs:
 			self.plot.setData(kwargs)
 
+	def saveState(self):
+		state = super().saveState()
+		state['geometry'] = self.subwin.geometry()
+		return state
+
+	def restoreState(self, state):
+		super().restoreState(state)
+		self.subwin.setGeometry(state['geometry'])
+
 nodelist=[Plot2dNode]
