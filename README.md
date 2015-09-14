@@ -16,5 +16,6 @@ Features
  * Image view and set multiple region-of-interest
  * Basic math operations, like calculating optical depth of absorption imaging
  * Gaussian and boson bimodal fit
+ * Fringe removal algorithm based on incremental singular value decomposition. See [arXiv:1007.2136](http://arxiv.org/abs/1007.2136)
 
  All features above have been tested in our lab.
