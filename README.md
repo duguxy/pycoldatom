@@ -6,7 +6,11 @@ Part of source files are modified from [Odysseus](https://github.com/edjoesu/ody
 
 This package is aimed at providing a flexible and universal framework for image acquiring and immediate analysis during the cold atom experiment, lighten the burden of operators from repetitive work of manipulating new data files. It is also easier and more robust to implement new features and integrate into the framework.
 
+![Main window](doc/window.png)
+
 A flowchart GUI interface allows simple programming of the processing and visualization procedure without the knowledge of any language.
+
+![Flowchart](doc/flowchart.png)
 
 Features
 --------
